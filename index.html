@@ -1,0 +1,2827 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أبو الفضل للألبان - نظام إدارة الخزائن والرقابة المالية</title>
+
+<!-- Supabase JS v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<!-- Font Awesome 6 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<!-- SheetJS (XLSX) لتصدير ملفات الإكسيل متعددة الصفحات -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- خط Cairo العربي -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --green-dark: #0f3d23;
+    --green-primary: #155724;
+    --green-hover: #0b3b19;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --white: #ffffff;
+    --bg: #f8faf9;
+    --card: #ffffff;
+    --line: #e2e8f0;
+    --text: #1e293b;
+    --muted: #64748b;
+    --red: #b91c1c;
+    --red-light: #fee2e2;
+    --amber: #b45309;
+    --amber-light: #fef3c7;
+    --blue: #1d4ed8;
+    --blue-light: #dbeafe;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Cairo', Tahoma, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, var(--green-dark), var(--green-primary));
+    color: #fff;
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand-logo {
+    width: 46px; height: 46px; border-radius: 50%;
+    background: #fff; padding: 2px; object-fit: contain; border: 2px solid #fff;
+  }
+  .brand h1 { font-size: 19px; margin: 0; font-weight: 800; letter-spacing: -0.3px; }
+  .brand .sub-brand { font-size: 12px; color: #bbf7d0; display: block; }
+  #whoami { display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; }
+
+  /* Navigation */
+  nav {
+    display: flex; gap: 6px; flex-wrap: wrap; background: #fff;
+    border-bottom: 2px solid var(--green-border); padding: 8px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+  }
+  nav button {
+    background: #f1f5f9; color: var(--text); border: 1px solid #e2e8f0;
+    padding: 8px 14px; border-radius: 8px; font-weight: 600; font-size: 13px;
+    display: inline-flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;
+  }
+  nav button:hover { background: var(--green-light); color: var(--green-primary); border-color: var(--green-border); }
+  nav button.active {
+    background: var(--green-primary); color: #fff; border-color: var(--green-primary);
+    box-shadow: 0 2px 6px rgba(21, 87, 36, 0.3);
+  }
+
+  /* Main & Cards */
+  main { max-width: 1200px; margin: 0 auto; padding: 18px 14px; }
+  .card {
+    background: var(--card); border: 1px solid #e5e7eb; border-radius: 12px;
+    padding: 18px; margin-bottom: 18px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .card h2 {
+    font-size: 16px; margin: 0 0 14px; color: var(--green-primary); font-weight: 700;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 2px solid var(--green-light); padding-bottom: 8px;
+  }
+  .card h2 .title-text { display: flex; align-items: center; gap: 8px; }
+
+  /* Form & Inputs */
+  form.f { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; align-items: end; }
+  label { display: flex; flex-direction: column; font-size: 13px; font-weight: 600; gap: 5px; color: #475569; }
+  label.row { flex-direction: row; align-items: center; color: var(--text); font-size: 13.5px; gap: 6px; cursor: pointer; }
+  input, select, textarea, button {
+    font: inherit; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
+    background: #fff; color: var(--text); outline: none; transition: border 0.2s, box-shadow 0.2s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--green-primary); box-shadow: 0 0 0 3px rgba(21, 87, 36, 0.12);
+  }
+  
+  /* Buttons */
+  button {
+    background: var(--green-primary); color: #fff; border: none; cursor: pointer;
+    font-weight: 700; padding: 9px 15px; border-radius: 8px; display: inline-flex;
+    align-items: center; justify-content: center; gap: 6px; transition: all 0.2s;
+  }
+  button:hover { background: var(--green-hover); }
+  button.secondary { background: #475569; }
+  button.secondary:hover { background: #334155; }
+  button.danger { background: var(--red); }
+  button.danger:hover { background: #991b1b; }
+  button.warning { background: #d97706; }
+  button.warning:hover { background: #b45309; }
+  button.sm { padding: 5px 10px; font-size: 12px; border-radius: 6px; }
+  button.sm.edit-btn { background: #0d6efd; }
+  button.sm.edit-btn:hover { background: #0a58ca; }
+  button.sm.del-btn { background: var(--red); }
+  button.sm.del-btn:hover { background: #991b1b; }
+  button:disabled { opacity: .6; cursor: not-allowed; }
+  .full { grid-column: 1 / -1; }
+  .inline { display: contents; }
+
+  /* Tables & Pagination */
+  .wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--line); text-align: right; }
+  th { background: #f8fafc; color: #475569; font-weight: 700; white-space: nowrap; }
+  tbody tr:hover { background: #fafdfb; }
+  .in { color: #15803d; font-weight: bold; }
+  .out { color: var(--red); font-weight: bold; }
+
+  /* Badges */
+  .badge { display: inline-block; padding: 3px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 700; }
+  .badge.pending { background: var(--amber-light); color: var(--amber); border: 1px solid #fde68a; }
+  .badge.confirmed { background: var(--green-light); color: var(--green-primary); border: 1px solid var(--green-border); }
+  .badge.rejected { background: var(--red-light); color: var(--red); border: 1px solid #fca5a5; }
+
+  /* Stats Grid */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .stat {
+    border: 1px solid var(--green-border); background: var(--green-light);
+    border-radius: 10px; padding: 14px 16px; position: relative; overflow: hidden;
+  }
+  .stat .label { color: #166534; font-size: 13px; font-weight: 600; }
+  .stat .value { font-size: 21px; font-weight: 800; margin-top: 4px; color: var(--green-dark); }
+  .stat .stat-icon { position: absolute; left: 14px; top: 14px; font-size: 28px; opacity: 0.15; color: var(--green-primary); }
+
+  /* Filters Bar */
+  .filter-box {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 12px; margin-bottom: 14px; display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; align-items: end;
+  }
+  .pagination {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 4px 0; font-size: 13px; color: var(--muted);
+  }
+  .pagination-btns { display: flex; gap: 4px; }
+
+  /* Alerts */
+  .msg { padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: none; font-weight: 600; }
+  .msg.ok { display: flex; align-items: center; gap: 8px; background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+  .msg.err { display: flex; align-items: center; gap: 8px; background: var(--red-light); color: var(--red); border: 1px solid #fca5a5; }
+  .hidden { display: none !important; }
+
+  /* Modal */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 14px;
+  }
+  .modal-box {
+    background: #fff; border-radius: 12px; max-width: 600px; width: 100%;
+    max-height: 90vh; overflow-y: auto; padding: 22px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+  }
+
+  /* Printable Receipt Styles */
+  @media print {
+    @page {
+      size: auto;
+      margin: 0 !important;
+    }
+    html, body {
+      margin: 0 !important;
+      padding: 0 !important;
+      height: 100% !important;
+      max-height: 100% !important;
+      overflow: hidden !important;
+      background: #fff !important;
+    }
+    body * { visibility: hidden !important; }
+    #printReceiptArea, #printReceiptArea * { visibility: visible !important; }
+    #printReceiptArea {
+      position: absolute !important;
+      left: 0 !important;
+      top: 0 !important;
+      width: 100% !important;
+      max-height: 98vh !important;
+      overflow: hidden !important;
+      page-break-after: avoid !important;
+      page-break-before: avoid !important;
+      page-break-inside: avoid !important;
+      break-after: avoid !important;
+      break-inside: avoid !important;
+    }
+    .receipt-view {
+      page-break-after: avoid !important;
+      page-break-before: avoid !important;
+      page-break-inside: avoid !important;
+      break-after: avoid !important;
+      break-inside: avoid !important;
+      box-shadow: none !important;
+      border: 1.5px dashed #000 !important;
+      padding: 10px 14px !important;
+      margin: 4px auto !important;
+      max-width: 440px !important;
+    }
+    .receipt-header { padding-bottom: 6px !important; margin-bottom: 6px !important; }
+    .receipt-header img { width: 48px !important; height: 48px !important; }
+    .receipt-row { margin-bottom: 4px !important; padding-bottom: 2px !important; font-size: 12px !important; }
+    .receipt-stamp { margin-top: 8px !important; padding: 4px !important; font-size: 12px !important; }
+    .no-print { display: none !important; }
+  }
+  .receipt-view {
+    border: 2px dashed #0f3d23; border-radius: 8px; padding: 14px; background: #fff;
+    max-width: 480px; margin: 0 auto; color: #000; font-size: 13px; line-height: 1.4;
+  }
+  .receipt-header { text-align: center; border-bottom: 2px solid #0f3d23; padding-bottom: 8px; margin-bottom: 8px; }
+  .receipt-header img { width: 55px; height: 55px; border-radius: 50%; }
+  .receipt-row { display: flex; justify-content: space-between; margin-bottom: 5px; border-bottom: 1px dotted #ccc; padding-bottom: 2px; }
+  .receipt-stamp {
+    text-align: center; margin-top: 10px; padding: 5px;
+    border: 2px solid #155724; border-radius: 6px; color: #155724; font-weight: 800;
+  }
+
+  /* Login */
+  .login { max-width: 380px; margin: 60px auto; text-align: center; }
+  .login .brand-logo-large { width: 100px; height: 100px; margin: 0 auto 12px; display: block; border-radius: 50%; border: 3px solid var(--green-primary); padding: 3px; background: #fff; }
+  .login form { text-align: right; grid-template-columns: 1fr; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <img src="logo.jpg" alt="شعار أبو الفضل" class="brand-logo" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830289.png'">
+    <div>
+      <h1>أبو الفضل للألبان</h1>
+      <span class="sub-brand">نظام إدارة الخزائن والرقابة المالية والموردين</span>
+    </div>
+  </div>
+  <div id="whoami" class="hidden">
+    <span><i class="fa-solid fa-circle-user" style="color:#bbf7d0"></i> <span id="whoName"></span> (<span id="whoRole"></span>)</span>
+    <button class="secondary sm" id="logoutBtn"><i class="fa-solid fa-arrow-right-from-bracket"></i> خروج</button>
+  </div>
+</header>
+
+<nav id="nav" class="hidden">
+  <button data-page="dashboard" data-view="dashboard" class="active"><i class="fa-solid fa-chart-pie"></i> لوحة التحكم</button>
+  <button data-page="transactions" data-view="tx"><i class="fa-solid fa-money-bill-transfer"></i> تسجيل حركة</button>
+  <button data-page="treasuries" data-view="treasuries"><i class="fa-solid fa-vault"></i> الخزائن</button>
+  <button data-page="reports" data-view="reports"><i class="fa-solid fa-file-invoice-dollar"></i> التقارير والحركات</button>
+  <button data-page="suppliers" data-view="suppliers"><i class="fa-solid fa-truck-moving"></i> الموردين</button>
+  <button data-page="supplier_report" data-view="supplier_report"><i class="fa-solid fa-chart-bar"></i> تقرير الموردين</button>
+  <button data-page="expense_report" data-view="expense_report"><i class="fa-solid fa-file-invoice-dollar"></i> تقرير المصروفات</button>
+  <button data-page="branches" data-view="branches"><i class="fa-solid fa-shop"></i> الفروع</button>
+  <button data-page="categories" data-view="categories"><i class="fa-solid fa-tags"></i> الأسباب</button>
+  <button data-page="custom_reports" data-view="custom_reports"><i class="fa-solid fa-sliders"></i> مصمم التقارير</button>
+  <button data-page="users" data-view="users"><i class="fa-solid fa-users-gear"></i> المستخدمين</button>
+  <button data-page="roles" data-view="roles"><i class="fa-solid fa-shield-halved"></i> الأدوار والصلاحيات</button>
+  <button data-page="backup" data-view="backup"><i class="fa-solid fa-database"></i> النسخ والأرشيف</button>
+</nav>
+
+<main>
+  <div id="msg" class="msg"></div>
+
+  <!-- تسجيل الدخول -->
+  <section id="loginView" class="card login hidden">
+    <img src="logo.jpg" alt="أبو الفضل" class="brand-logo-large" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830289.png'">
+    <h2 style="justify-content:center; border:none; margin-bottom:6px;">تسجيل الدخول للنظام</h2>
+    <p class="muted" style="margin-top:0; margin-bottom:16px;">أبو الفضل للألبان - الإدارة المالية</p>
+    <form id="loginForm" class="f">
+      <label class="full">اسم المستخدم أو البريد الإلكتروني <input type="text" name="email" required autocomplete="username" placeholder="مثال: admin أو admin@abufadl.com"></label>
+      <label class="full">كلمة المرور <input type="password" name="password" required autocomplete="current-password" placeholder="••••••••"></label>
+      <button type="submit" id="loginBtn" class="full"><i class="fa-solid fa-right-to-bracket"></i> دخول للنظام</button>
+    </form>
+  </section>
+
+  <!-- لوحة التحكم (Dashboard) -->
+  <section id="v-dashboard" class="view">
+    <!-- بطاقات الإحصائيات الفورية -->
+    <div class="grid" style="margin-bottom:16px;">
+      <div class="stat">
+        <i class="fa-solid fa-hand-holding-dollar stat-icon"></i>
+        <div class="label">إجمالي المقبوضات (اليوم)</div>
+        <div class="value in" id="kpiDeposits">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-money-bill-wave stat-icon"></i>
+        <div class="label">إجمالي المصروفات (اليوم)</div>
+        <div class="value out" id="kpiExpenses">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-truck-ramp-box stat-icon"></i>
+        <div class="label">دفعات الموردين (اليوم)</div>
+        <div class="value out" id="kpiSuppliers">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-vault stat-icon"></i>
+        <div class="label">الرصيد الفعلي المؤكد بالخزن</div>
+        <div class="value in" id="kpiTreasuriesTotal">0.00 ج.م</div>
+      </div>
+    </div>
+
+    <!-- جدول الخزائن بنظام الرصيد المزدوج (Dual Balance) -->
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-scale-balanced"></i> أرصدة الخزائن (الرصيد الفعلي المؤكد vs المتوقع بعد المعلق)</span></h2>
+      <div class="wrap"><table><thead><tr>
+        <th>الخزينة</th><th>الرصيد الفعلي المؤكد 🟢</th><th>المعلقات قيد الانتظار 🟡</th><th>الرصيد المتوقع بعد المعلق</th>
+      </tr></thead><tbody id="dashTreasuryBody"></tbody></table></div>
+    </div>
+
+    <!-- آخر الحركات المسجلة مع أزرار الاعتماد والرفض -->
+    <div class="card">
+      <h2>
+        <span class="title-text"><i class="fa-solid fa-clock-rotate-left"></i> آخر الحركات وحالة اعتمادها</span>
+        <button class="secondary sm" onclick="loadDashboard()"><i class="fa-solid fa-arrows-rotate"></i> تحديث</button>
+      </h2>
+      <div class="wrap"><table><thead><tr>
+        <th>رقم الحركة</th><th>النوع</th><th>الخزينة</th><th>المبلغ</th><th>الحالة</th><th>الشخص / المستفيد</th><th>التاريخ والوقت</th><th>إجراءات الاعتماد والطباعة</th>
+      </tr></thead><tbody id="dashTx"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- تسجيل حركة (Transactions) -->
+  <section id="v-tx" class="view hidden">
+    <!-- إشعار نجاح فوري وبارز -->
+    <div id="txSuccessBanner" class="card hidden" style="border:2px solid #22c55e; background:#f0fdf4; margin-bottom:16px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+        <div style="display:flex; gap:12px; align-items:center;">
+          <i class="fa-solid fa-circle-check" style="font-size:32px; color:#16a34a;"></i>
+          <div>
+            <h3 style="margin:0; color:#14532d; font-size:16px;">تم تسجيل الحركة بنجاح!</h3>
+            <div id="txSuccessInfo" style="margin-top:4px; font-size:13.5px; color:#15803d; font-weight:700;"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button type="button" id="txLastPrintBtn" class="sm"><i class="fa-solid fa-print"></i> طباعة السند</button>
+          <button type="button" class="secondary sm" onclick="$('txSuccessBanner').classList.add('hidden')">✕ إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-receipt"></i> تسجيل حركة مالية جديدة</span></h2>
+      <form id="txForm" class="f">
+        <label>نوع الحركة *
+          <select name="action" id="actionSel">
+            <option value="deposit">📥 إيداع نقدي (D...)</option>
+            <option value="withdraw">📤 صرف نقدي / مصروفات (W...)</option>
+            <option value="transfer">🔄 تحويل بين الخزائن (T...)</option>
+            <option value="cheque">📑 صرف شيك بنكي (C...)</option>
+            <option value="supply">🚚 توريد بضاعة من مورد (SP...)</option>
+            <option value="payment">💵 سداد دفعة نقدية لمورد (SP...)</option>
+            <option value="return">📦 مرتجع بضاعة لمورد (SP...)</option>
+            <option value="debit_note">✂️ إشعار خصم من مورد (SP...)</option>
+          </select>
+        </label>
+        <label id="treasuryWrap">الخزينة * <select name="treasury" id="txTreasury"></select></label>
+        <label id="targetWrap" class="hidden">الخزينة المحول إليها * <select name="target" id="txTarget"></select></label>
+        <label id="categoryWrap">السبب / البند * <select name="category" id="txCategory"></select></label>
+        <label id="supplierWrap" class="hidden">المورد * <select name="supplier" id="txSupplier"></select></label>
+        <label>المبلغ (ج.م) * <input type="number" name="amount" step="0.01" min="0.01" required placeholder="0.00"></label>
+        <label id="personWrap">اسم المستلم / المودع <input type="text" name="person" maxlength="120"></label>
+        <label id="invoiceWrap" class="hidden">رقم الفاتورة <input type="text" name="invoice" maxlength="40"></label>
+        <div id="chequeWrap" class="inline hidden">
+          <label>رقم الشيك * <input type="text" name="chequeNo" maxlength="40"></label>
+          <label>البنك المسحوب عليه * <input type="text" name="bank" maxlength="80"></label>
+          <label>اسم المستفيد * <input type="text" name="payee" maxlength="120"></label>
+          <label>تاريخ الاستحقاق <input type="date" name="dueDate"></label>
+        </div>
+        <label class="full">ملاحظات وبيان إضافي <input type="text" name="notes" maxlength="300"></label>
+        <button type="submit" id="txBtn" class="full"><i class="fa-solid fa-check"></i> تأكيد وتسجيل الحركة</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- الخزائن (Treasuries) -->
+  <section id="v-treasuries" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-plus-circle"></i> إضافة خزينة جديدة</span></h2>
+      <form id="treasuryForm" class="f">
+        <label>اسم الخزينة * <input type="text" name="name" required maxlength="120" placeholder="مثال: الخزينة الرئيسية"></label>
+        <label>الفرع * <select name="branch" class="branchSel" required></select></label>
+        <label>الرصيد الافتتاحي <input type="number" name="opening" step="0.01" min="0" value="0" required></label>
+        <button type="submit"><i class="fa-solid fa-plus"></i> إضافة الخزينة</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-vault"></i> قائمة الخزائن والأرصدة</span></h2>
+      <div class="wrap"><table><thead><tr>
+        <th>اسم الخزينة</th><th>الرصيد الفعلي المؤكد</th><th>الرصيد بعد المعلق</th><th>الحالة</th><th>إجراءات</th>
+      </tr></thead><tbody id="treasuryBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- التقارير والحركات الشاملة (Reports with Multi-Filter & 20-row Pagination) -->
+  <section id="v-reports" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-filter"></i> التصفية المتقدمة لكشف الحسابات والحركات</span></h2>
+      <div class="filter-box">
+        <label>الخزينة
+          <select id="rfTreasury"><option value="">— كل الخزائن —</option></select>
+        </label>
+        <label>حالة الاعتماد
+          <select id="rfStatus">
+            <option value="">— كل الحالات —</option>
+            <option value="confirmed">🟢 المؤكد فقط</option>
+            <option value="pending">🟡 المعلق فقط</option>
+            <option value="rejected">🔴 المرفوض فقط</option>
+          </select>
+        </label>
+        <label>نوع الحركة
+          <select id="rfType">
+            <option value="">— كل الأنواع —</option>
+            <option value="deposit">إيداع</option>
+            <option value="withdraw">صرف / مصروف</option>
+            <option value="transfer_out">تحويل صادر</option>
+            <option value="transfer_in">تحويل وارد</option>
+            <option value="cheque">شيك</option>
+          </select>
+        </label>
+        <label>من تاريخ <input type="date" id="rfFrom"></label>
+        <label>إلى تاريخ <input type="date" id="rfTo"></label>
+        <label>بحث نصي / رقم السند <input type="text" id="rfSearch" placeholder="ابحث برقم السند أو الاسم..."></label>
+        <div style="display:flex; gap:6px;">
+          <button type="button" id="rfApplyBtn"><i class="fa-solid fa-magnifying-glass"></i> تصفية</button>
+          <button type="button" class="secondary" id="rfResetBtn"><i class="fa-solid fa-rotate-left"></i> إلغاء</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="title-text"><i class="fa-solid fa-file-invoice-dollar"></i> الحركات وسندات القبض والصرف</span>
+        <div style="display:flex; gap:6px;">
+          <button type="button" class="sm secondary" id="exportRepExcelBtn"><i class="fa-solid fa-file-excel"></i> تصدير Excel</button>
+        </div>
+      </h2>
+      <div class="wrap"><table><thead><tr>
+        <th>رقم السند</th><th>التاريخ</th><th>النوع</th><th>الخزينة</th><th>البند / السبب</th><th>المستفيد / المودع</th><th>وارد (+)</th><th>صادر (-)</th><th>الحالة</th><th>الرصيد بعدها</th><th>إجراءات</th>
+      </tr></thead><tbody id="repBody"></tbody></table></div>
+      
+      <!-- نظام الصفحات (20 حركة كحد أقصى) -->
+      <div class="pagination">
+        <div>عرض <span id="repCurrentCount">0</span> حركة (صفحة <span id="repPageNum">1</span> من <span id="repTotalPages">1</span>)</div>
+        <div class="pagination-btns">
+          <button type="button" class="sm secondary" id="repPrevBtn"><i class="fa-solid fa-chevron-right"></i> السابق</button>
+          <button type="button" class="sm secondary" id="repNextBtn">التالي <i class="fa-solid fa-chevron-left"></i></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- الموردين (Suppliers) -->
+  <section id="v-suppliers" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-user-plus"></i> إضافة مورد جديد</span></h2>
+      <form id="supForm" class="f">
+        <label>اسم المورد * <input name="name" required maxlength="120"></label>
+        <label>التليفون <input name="phone" maxlength="30"></label>
+        <label>العنوان <input name="address" maxlength="200"></label>
+        <label>الرصيد الافتتاحي (موجب = علينا له) <input type="number" name="opening" step="0.01" value="0"></label>
+        <button type="submit"><i class="fa-solid fa-plus"></i> إضافة المورد</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-address-book"></i> أرصدة الموردين</span></h2>
+      <div class="wrap"><table><thead><tr><th>الاسم</th><th>التليفون</th><th>الرصيد المستحق (ج.م)</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody id="supBody"></tbody></table></div>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-timeline"></i> سجل حركات الموردين (SP001...)</span></h2>
+      <div class="wrap"><table><thead><tr>
+        <th>رقم الحركة</th><th>التاريخ</th><th>المورد</th><th>النوع</th><th>المبلغ</th><th>الحالة</th><th>الرصيد بعدها</th><th>رقم الفاتورة</th><th>إجراءات</th>
+      </tr></thead><tbody id="mvBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- الفروع (Branches) -->
+  <section id="v-branches" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-square-plus"></i> إضافة فرع جديد</span></h2>
+      <form id="branchForm" class="f">
+        <label>اسم الفرع * <input name="name" required maxlength="120"></label>
+        <label>كود الفرع * <input name="code" required maxlength="20" placeholder="مثال: HQ-01"></label>
+        <label>العنوان <input name="address" maxlength="200"></label>
+        <label>التليفون <input name="phone" maxlength="30"></label>
+        <button type="submit"><i class="fa-solid fa-plus"></i> حفظ الفرع</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-shop"></i> فروع الشركة</span></h2>
+      <div class="wrap"><table><thead><tr><th>الكود</th><th>الاسم</th><th>العنوان</th><th>التليفون</th><th>إجراءات</th></tr></thead>
+      <tbody id="branchBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- الأسباب / البنود (Categories) -->
+  <section id="v-categories" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-tag"></i> إضافة بند مالي (إيداع / صرف / تحويل)</span></h2>
+      <form id="catForm" class="f">
+        <label>نوع البند *
+          <select name="type">
+            <option value="withdraw">صرف ومصروفات تشغيلية</option>
+            <option value="deposit">إيداعات وإيرادات مبيعات</option>
+            <option value="transfer">تحويل بين الخزن</option>
+          </select>
+        </label>
+        <label>اسم البند * <input name="name" required maxlength="120" placeholder="مثال: تغذية خزينة فرعية"></label>
+        <label>الوصف <input name="description" maxlength="200"></label>
+        <button type="submit"><i class="fa-solid fa-plus"></i> إضافة البند</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-list-ul"></i> بنود الإيرادات والمصروفات والتحويل</span></h2>
+      <div class="wrap"><table><thead><tr><th>النوع</th><th>اسم البند</th><th>الوصف</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+      <tbody id="catBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- تقرير الموردين الاحترافي -->
+  <section id="v-supplier_report" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-chart-bar"></i> تقرير حركات الموردين الاحترافي</span></h2>
+      <div class="filter-box">
+        <label>المورد
+          <select id="srSupplier"><option value="">— كل الموردين —</option></select>
+        </label>
+        <label>نوع الحركة
+          <select id="srType">
+            <option value="">— كل الأنواع —</option>
+            <option value="supply">🚚 توريد بضاعة</option>
+            <option value="payment">💵 سداد دفعة</option>
+            <option value="return">📦 مرتجع بضاعة</option>
+            <option value="debit_note">✂️ إشعار خصم</option>
+          </select>
+        </label>
+        <label>حالة الحركة
+          <select id="srStatus">
+            <option value="">— كل الحالات —</option>
+            <option value="confirmed">🟢 مؤكد</option>
+            <option value="pending">🟡 معلق</option>
+            <option value="rejected">🔴 مرفوض</option>
+          </select>
+        </label>
+        <label>من تاريخ <input type="date" id="srFrom"></label>
+        <label>إلى تاريخ <input type="date" id="srTo"></label>
+        <div style="display:flex; gap:6px; align-items:flex-end;">
+          <button type="button" id="srApplyBtn"><i class="fa-solid fa-magnifying-glass"></i> تصفية</button>
+          <button type="button" class="secondary" id="srResetBtn"><i class="fa-solid fa-rotate-left"></i> إلغاء</button>
+          <button type="button" class="secondary" id="srPrintBtn"><i class="fa-solid fa-print"></i> طباعة</button>
+          <button type="button" class="secondary" id="srExcelBtn"><i class="fa-solid fa-file-excel"></i> تصدير Excel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- بطاقات ملخص إجمالي -->
+    <div class="grid" id="srKpiGrid" style="margin-bottom:16px;">
+      <div class="stat">
+        <i class="fa-solid fa-truck-ramp-box stat-icon"></i>
+        <div class="label">إجمالي التوريدات (مؤكد)</div>
+        <div class="value out" id="srKpiSupply">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-money-bill-wave stat-icon"></i>
+        <div class="label">إجمالي المدفوعات (مؤكد)</div>
+        <div class="value in" id="srKpiPayment">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-rotate-left stat-icon"></i>
+        <div class="label">إجمالي المرتجعات (مؤكد)</div>
+        <div class="value in" id="srKpiReturn">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-scissors stat-icon"></i>
+        <div class="label">إجمالي إشعارات الخصم</div>
+        <div class="value in" id="srKpiDebit">0.00 ج.م</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>
+        <span class="title-text"><i class="fa-solid fa-timeline"></i> سجل حركات الموردين التفصيلي</span>
+        <span id="srCountLabel" style="font-size:13px; color:var(--muted); font-weight:600;"></span>
+      </h2>
+      <div class="wrap"><table>
+        <thead><tr>
+          <th>رقم الحركة</th><th>التاريخ</th><th>المورد</th><th>نوع الحركة</th>
+          <th>وارد (+)</th><th>صادر (−)</th><th>الحالة</th><th>الرصيد المتوقع</th><th>رقم الفاتورة</th><th>ملاحظات</th><th>إجراءات</th>
+        </tr></thead>
+        <tbody id="srBody"></tbody>
+      </table></div>
+
+      <!-- صفوف المجاميع -->
+      <div id="srSummaryRow" style="display:none; margin-top:10px; padding:10px; background:#f0fdf4; border-radius:8px; border:1px solid var(--green-border);">
+        <strong style="color:var(--green-primary);">ملخص النتائج:</strong>
+        <span id="srSummaryText" style="margin-right:12px; font-size:13.5px;"></span>
+      </div>
+
+      <div class="pagination">
+        <div>عرض <span id="srCurrentCount">0</span> حركة (صفحة <span id="srPageNum">1</span> من <span id="srTotalPages">1</span>)</div>
+        <div class="pagination-btns">
+          <button type="button" class="sm secondary" id="srPrevBtn"><i class="fa-solid fa-chevron-right"></i> السابق</button>
+          <button type="button" class="sm secondary" id="srNextBtn">التالي <i class="fa-solid fa-chevron-left"></i></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- تقرير المصروفات الاحترافي -->
+  <section id="v-expense_report" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-file-invoice-dollar"></i> تقرير المصروفات والمدفوعات الاحترافي</span></h2>
+      <div class="filter-box">
+        <label>الخزينة
+          <select id="erTreasury"><option value="">— كل الخزائن —</option></select>
+        </label>
+        <label>البند / السبب
+          <select id="erCategory"><option value="">— كل البنود —</option></select>
+        </label>
+        <label>حالة الاعتماد
+          <select id="erStatus">
+            <option value="">— كل الحالات —</option>
+            <option value="confirmed">🟢 المؤكد فقط</option>
+            <option value="pending">🟡 المعلق فقط</option>
+            <option value="rejected">🔴 المرفوض فقط</option>
+          </select>
+        </label>
+        <label>من تاريخ <input type="date" id="erFrom"></label>
+        <label>إلى تاريخ <input type="date" id="erTo"></label>
+        <label>بحث <input type="text" id="erSearch" placeholder="رقم سند أو اسم مستفيد..."></label>
+        <div style="display:flex; gap:6px; align-items:flex-end;">
+          <button type="button" id="erApplyBtn"><i class="fa-solid fa-magnifying-glass"></i> تصفية</button>
+          <button type="button" class="secondary" id="erResetBtn"><i class="fa-solid fa-rotate-left"></i> إلغاء</button>
+          <button type="button" class="secondary" id="erPrintBtn"><i class="fa-solid fa-print"></i> طباعة</button>
+          <button type="button" class="secondary" id="erExcelBtn"><i class="fa-solid fa-file-excel"></i> Excel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- بطاقات ملخص المصروفات -->
+    <div class="grid" style="margin-bottom:16px;">
+      <div class="stat">
+        <i class="fa-solid fa-money-bill-wave stat-icon"></i>
+        <div class="label">إجمالي المصروفات (مؤكد)</div>
+        <div class="value out" id="erKpiTotal">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-clock stat-icon"></i>
+        <div class="label">قيد الانتظار (معلق)</div>
+        <div class="value" style="color:var(--amber);" id="erKpiPending">0.00 ج.م</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-check-double stat-icon"></i>
+        <div class="label">عدد الحركات المصفاة</div>
+        <div class="value bold" id="erKpiCount">0</div>
+      </div>
+      <div class="stat">
+        <i class="fa-solid fa-hashtag stat-icon"></i>
+        <div class="label">متوسط قيمة المصروف</div>
+        <div class="value" id="erKpiAvg">0.00 ج.م</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-list-ol"></i> بيان المصروفات التفصيلي</span></h2>
+      <div class="wrap"><table>
+        <thead><tr>
+          <th>رقم السند</th><th>التاريخ</th><th>الخزينة</th><th>البند / السبب</th>
+          <th>المستفيد</th><th>المبلغ</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>
+        </tr></thead>
+        <tbody id="erBody"></tbody>
+      </table></div>
+
+      <div class="pagination">
+        <div>عرض <span id="erCurrentCount">0</span> مصروف (صفحة <span id="erPageNum">1</span> من <span id="erTotalPages">1</span>)</div>
+        <div class="pagination-btns">
+          <button type="button" class="sm secondary" id="erPrevBtn"><i class="fa-solid fa-chevron-right"></i> السابق</button>
+          <button type="button" class="sm secondary" id="erNextBtn">التالي <i class="fa-solid fa-chevron-left"></i></button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- مصمم التقارير المخصص (Custom Report Builder) -->
+  <section id="v-custom_reports" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-sliders"></i> تصميم وبناء تقرير جديد</span></h2>
+      <form id="customReportForm" class="f">
+        <label>اسم التقرير * <input type="text" name="repName" required placeholder="مثال: كشف المصروفات الأسبوعي"></label>
+        <label>مصدر البيانات *
+          <select name="dataSource" id="crDataSource">
+            <option value="transactions">حركات النقدية والخزائن</option>
+            <option value="suppliers">الموردين وحركات التوريد</option>
+            <option value="treasuries">الخزائن والفروع والأرصدة</option>
+          </select>
+        </label>
+        <label>شكل واتجاه الورقة *
+          <select name="pageFormat">
+            <option value="portrait">📄 طولي (A4 Portrait)</option>
+            <option value="landscape">📑 عرضي (A4 Landscape)</option>
+            <option value="receipt">🧾 ريسيت حراري (Thermal 80mm)</option>
+          </select>
+        </label>
+        <label>حجم الخط *
+          <select name="fontSize">
+            <option value="small">صغير (11px)</option>
+            <option value="medium" selected>متوسط (13px)</option>
+            <option value="large">كبير (15px)</option>
+          </select>
+        </label>
+        <div class="full">
+          <label style="margin-bottom:6px;">الأعمدة المطلوب ظهورها في التقرير:</label>
+          <div id="crColumnsBox" class="flags"></div>
+        </div>
+        <button type="submit" class="full"><i class="fa-solid fa-floppy-disk"></i> حفظ قالب التقرير</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-book-bookmark"></i> مكتبة التقارير المصممة الجاهزة</span></h2>
+      <div class="wrap"><table><thead><tr>
+        <th>اسم التقرير</th><th>المصدر</th><th>شكل الورقة</th><th>الخط</th><th>إجراءات العرض والطباعة</th>
+      </tr></thead><tbody id="customRepListBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- المستخدمين (Users) -->
+  <section id="v-users" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-user-plus"></i> إضافة مستخدم جديد للنظام</span></h2>
+      <form id="userCreateForm" class="f">
+        <label>الاسم بالكامل * <input name="fullName" required maxlength="120" placeholder="مثال: أحمد محمود"></label>
+        <label>اسم الدخول (Username) * <input name="username" required maxlength="40" placeholder="مثال: ahmed.m"></label>
+        <label>البريد الإلكتروني * <input type="email" name="email" required autocomplete="username" placeholder="user@abufadl.com"></label>
+        <label>كلمة المرور * <input type="password" name="password" required minlength="6" placeholder="••••••••"></label>
+        <label>الدور الوظيفي * 
+          <select name="roleKey" id="newUserRole" required>
+            <option value="admin">المدير العام للنظام</option>
+            <option value="branch_manager">مدير الفرع</option>
+            <option value="cashier">أمين خزينة / كاشير</option>
+            <option value="accountant">محاسب ومراجع مالي</option>
+          </select>
+        </label>
+        <label>الفرع التابع له <select name="branchId" id="newUserBranch"></select></label>
+        <label>الخزينة المخصصة <select name="treasuryId" id="newUserTreasury"></select></label>
+        <button type="submit"><i class="fa-solid fa-user-plus"></i> إنشاء الحساب</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-users"></i> مستخدمو النظام</span></h2>
+      <div class="wrap"><table><thead><tr>
+        <th>الاسم بالكامل</th><th>اسم الدخول</th><th>الدور الوظيفي</th><th>الفرع</th><th>الحالة</th><th>إجراءات</th>
+      </tr></thead><tbody id="userBody"></tbody></table></div>
+    </div>
+  </section>
+
+  <!-- الأدوار والصلاحيات (Dynamic Roles & Granular Permissions) -->
+  <section id="v-roles" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-plus-circle"></i> إضافة دور وظيفي جديد</span></h2>
+      <form id="newRoleForm" class="f">
+        <label>كود الدور (إنجليزي بدون مسافات) * <input name="roleKey" required pattern="[a-zA-Z0-9_]+" placeholder="مثال: shift_supervisor"></label>
+        <label>اسم المسمى الوظيفي (عربي) * <input name="roleName" required placeholder="مثال: مشرف وردية مسائية"></label>
+        <button type="submit"><i class="fa-solid fa-plus"></i> إضافة الدور</button>
+      </form>
+    </div>
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-shield-halved"></i> مصفوفة الصلاحيات للأدوار الوظيفية</span></h2>
+      <div id="roleList"></div>
+    </div>
+  </section>
+
+  <!-- النسخ الاحتياطي والأرشيف وإقفال الفترة (محمي بصلاحية الأدمن وتأكيد مزدوج) -->
+  <section id="v-backup" class="view hidden">
+    <div class="card">
+      <h2><span class="title-text"><i class="fa-solid fa-cloud-arrow-down"></i> مركز النسخ الاحتياطي والتصدير الشامل</span></h2>
+      <p class="muted">يتم حفظ النسخ الاحتياطية أيضاً بشكل مباشر في مجلد Google Drive على جهازك: <code>G:\My Drive\AbuElFadl_Backups\</code></p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:14px;">
+        <button type="button" id="btnExportJSON"><i class="fa-solid fa-file-code"></i> تحميل نسخة كاملة (JSON Backup)</button>
+        <button type="button" class="secondary" id="btnExportExcelAll"><i class="fa-solid fa-file-excel"></i> تصدير كل سجلات النظام (Excel متعدد الصفحات)</button>
+      </div>
+    </div>
+
+    <!-- استيراد واسترداد البيانات من قالب Excel أو JSON -->
+    <div class="card" style="border:1.5px solid var(--green-border); background:#fcfdfc;">
+      <h2><span class="title-text"><i class="fa-solid fa-file-import"></i> استرداد واستيراد البيانات من قالب جاهز</span></h2>
+      <p class="muted" style="margin-top:0;">يمكنك تحميل قالب Excel الفارغ وتعبئته ببيانات الخزائن، الموردين، البنود، أو استيراد ملف نسخة JSON مباشرة.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:12px;">
+        <button type="button" class="secondary" id="btnDownloadTemplate"><i class="fa-solid fa-download"></i> تحميل قالب استيراد فارغ (Excel Template)</button>
+        <label class="button secondary" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer; padding:8px 14px; border-radius:8px; background:#f1f5f9; border:1px solid #cbd5e1; font-weight:600; font-size:13px; margin:0;">
+          <i class="fa-solid fa-upload"></i> استرداد ورفع من ملف (Excel / JSON)
+          <input type="file" id="importFileInput" accept=".xlsx, .xls, .json" style="display:none;">
+        </label>
+      </div>
+      <div id="importStatus" style="margin-top:10px; font-size:13px; font-weight:bold;"></div>
+    </div>
+
+    <!-- تدوير الأرصدة وتصفير الحركات (Master Key Gate) -->
+    <div class="card" style="border:2px solid var(--red); background:#fff5f5;">
+      <h2 style="color:var(--red); border-bottom-color:#fecaca;">
+        <span class="title-text"><i class="fa-solid fa-triangle-exclamation"></i> إقفال الفترة وتدوير الأرصدة (للإدارة العليا فقط)</span>
+      </h2>
+      <p style="color:#7f1d1d; font-size:13.5px; font-weight:600; line-height:1.6;">
+        ⚠️ هذه العملية تقوم بنقل رصيد كل خزينة ورصيد كل مورد حالي ليصبح <strong>«رصيد أول المدة»</strong> للدورة الجديدة، ثم مسح الحركات القديمة وتصفير الترقيم (D001, W001, T001...).<br>
+        <strong>قبل التنفيذ يتم تنزيل نسخة احتياطية كاملة تلقائياً. العملية لا يمكن الرجوع عنها.</strong>
+      </p>
+      <form id="masterCleanForm" style="display:flex; gap:10px; align-items:flex-end; max-width:500px; margin-top:14px;">
+        <label style="flex:1;">اكتب كلمة التأكيد «تدوير» *
+          <input type="text" name="confirmWord" required placeholder="تدوير" autocomplete="off">
+        </label>
+        <button type="submit" class="danger"><i class="fa-solid fa-broom"></i> تدوير الأرصدة وتصفير الحركات</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<!-- نافذة معاينة وطباعة الريسيت الاحترافي -->
+<div id="receiptModal" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;" class="no-print">
+      <h3 style="margin:0; color:var(--green-primary);"><i class="fa-solid fa-print"></i> معاينة وطباعة السند</h3>
+      <div style="display:flex; gap:6px;">
+        <button type="button" class="sm" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الآن</button>
+        <button type="button" class="sm secondary" onclick="$('receiptModal').classList.add('hidden')">✕ إغلاق</button>
+      </div>
+    </div>
+    <div id="printReceiptArea">
+      <div class="receipt-view">
+        <div class="receipt-header">
+          <img src="logo.jpg" alt="أبو الفضل" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2830/2830289.png'">
+          <h2 style="margin:4px 0; font-size:16px;">أبو الفضل للألبان</h2>
+          <div style="font-size:12px; color:#555;" id="rcBranchName">الفرع الرئيسي</div>
+          <div style="font-size:14px; font-weight:bold; margin-top:6px; color:#155724;" id="rcDocTitle">سند صرف نقدي</div>
+        </div>
+        <div class="receipt-row"><span>رقم السند:</span><strong id="rcTransNum">—</strong></div>
+        <div class="receipt-row"><span>التاريخ والوقت:</span><span id="rcDate">—</span></div>
+        <div class="receipt-row"><span>الخزينة:</span><span id="rcTreasury">—</span></div>
+        <div class="receipt-row"><span>المستفيد / المودع:</span><strong id="rcPerson">—</strong></div>
+        <div class="receipt-row"><span>السبب والبيان:</span><span id="rcCategory">—</span></div>
+        <div class="receipt-row" id="rcInvoiceRow" style="display:none;"><span>رقم الفاتورة:</span><span id="rcInvoice">—</span></div>
+        <div class="receipt-row" id="rcChequeRow" style="display:none;"><span>بيانات الشيك:</span><span id="rcCheque">—</span></div>
+        <div class="receipt-row" style="border-top:1px solid #000; margin-top:8px; padding-top:6px;">
+          <span style="font-size:15px; font-weight:bold;">المبلغ:</span>
+          <strong style="font-size:16px; color:#155724;" id="rcAmount">0.00 ج.م</strong>
+        </div>
+        <div style="margin:6px 0 12px; font-size:12.5px; font-style:italic; color:#333;" id="rcTafqeet">فقط ... لا غير</div>
+        <div class="receipt-row"><span>الملاحظات:</span><span id="rcNotes">—</span></div>
+        <div class="receipt-stamp" id="rcStamp">معتمد رسمي</div>
+        <div style="display:flex; justify-content:space-between; margin-top:24px; text-align:center; font-size:12px;">
+          <div>توقيع المستلم<br><br>.........................</div>
+          <div>أمين الخزينة<br><br>.........................</div>
+          <div>الاعتماد المالي<br><br><span id="rcSigner">.........................</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== نوافذ التعديل (Edit Modals) ===== -->
+
+<!-- تعديل خزينة -->
+<div id="editTreasuryModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:28px; width:95%; max-width:440px; box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+    <h3 style="color:var(--green-primary); margin-top:0;"><i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الخزينة</h3>
+    <form id="editTreasuryForm" class="f">
+      <input type="hidden" name="treasuryId">
+      <label>اسم الخزينة * <input name="name" required maxlength="120"></label>
+      <div style="display:flex; gap:10px; margin-top:12px;">
+        <button type="submit"><i class="fa-solid fa-save"></i> حفظ التعديل</button>
+        <button type="button" class="secondary" onclick="document.getElementById('editTreasuryModal').style.display='none'"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- تعديل فرع -->
+<div id="editBranchModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:28px; width:95%; max-width:460px; box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+    <h3 style="color:var(--green-primary); margin-top:0;"><i class="fa-solid fa-pen-to-square"></i> تعديل بيانات الفرع</h3>
+    <form id="editBranchForm" class="f">
+      <input type="hidden" name="branchId">
+      <label>الكود <input name="code" required maxlength="20"></label>
+      <label>الاسم * <input name="name" required maxlength="120"></label>
+      <label>العنوان <input name="address" maxlength="200"></label>
+      <label>التليفون <input name="phone" maxlength="30"></label>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button type="submit"><i class="fa-solid fa-save"></i> حفظ التعديلات</button>
+        <button type="button" class="secondary" onclick="document.getElementById('editBranchModal').style.display='none'"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- تعديل مورد -->
+<div id="editSupplierModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:28px; width:95%; max-width:460px; box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+    <h3 style="color:var(--green-primary); margin-top:0;"><i class="fa-solid fa-pen-to-square"></i> تعديل بيانات المورد</h3>
+    <form id="editSupplierForm" class="f">
+      <input type="hidden" name="supplierId">
+      <label>الاسم * <input name="name" required maxlength="120"></label>
+      <label>التليفون <input name="phone" maxlength="30"></label>
+      <label>العنوان <input name="address" maxlength="200"></label>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button type="submit"><i class="fa-solid fa-save"></i> حفظ التعديلات</button>
+        <button type="button" class="secondary" onclick="document.getElementById('editSupplierModal').style.display='none'"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- تعديل مستخدم -->
+<div id="editUserModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:9000; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:28px; width:95%; max-width:500px; box-shadow:0 8px 40px rgba(0,0,0,0.25);">
+    <h3 style="color:var(--green-primary); margin-top:0;"><i class="fa-solid fa-user-pen"></i> تعديل بيانات المستخدم</h3>
+    <form id="editUserForm" class="f">
+      <input type="hidden" name="userId">
+      <label>الاسم بالكامل * <input name="fullName" required maxlength="120"></label>
+      <label>اسم الدخول * <input name="username" required maxlength="40"></label>
+      <label>البريد الإلكتروني (للدخول) * <input type="email" name="email" required autocomplete="off"></label>
+      <label>الدور الوظيفي * <select name="roleKey" id="editUserRole" required></select></label>
+      <label>الفرع <select name="branchId" id="editUserBranch"></select></label>
+      <label>الخزينة <select name="treasuryId" id="editUserTreasury"></select></label>
+      <label>كلمة مرور جديدة (اتركها فارغة لو مش هتغيّرها)
+        <input type="password" name="newPassword" minlength="6" autocomplete="new-password" placeholder="6 أحرف على الأقل">
+      </label>
+      <label style="flex-direction:row; align-items:center; gap:10px;">
+        <input type="checkbox" name="isActive" style="width:auto; margin:0;">
+        <span>الحساب نشط ومفعّل</span>
+      </label>
+      <div style="display:flex; gap:10px; margin-top:8px;">
+        <button type="submit"><i class="fa-solid fa-save"></i> حفظ التعديلات</button>
+        <button type="button" class="secondary" onclick="document.getElementById('editUserModal').style.display='none'"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- تأكيد الحذف -->
+<div id="confirmDeleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9500; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:14px; padding:32px; width:92%; max-width:400px; box-shadow:0 8px 40px rgba(0,0,0,0.3); text-align:center;">
+    <i class="fa-solid fa-triangle-exclamation" style="font-size:40px; color:#dc3545; margin-bottom:14px; display:block;"></i>
+    <h3 style="color:#dc3545; margin:0 0 10px;">تأكيد الحذف النهائي</h3>
+    <p id="confirmDeleteMsg" style="color:#555; margin-bottom:22px;">هل أنت متأكد من حذف هذا العنصر؟</p>
+    <div style="display:flex; gap:12px; justify-content:center;">
+      <button id="confirmDeleteYes" class="danger"><i class="fa-solid fa-trash"></i> نعم، احذف</button>
+      <button class="secondary" onclick="document.getElementById('confirmDeleteModal').style.display='none'"><i class="fa-solid fa-xmark"></i> إلغاء</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- تهيئة Supabase والمفتاح العام ----
+const SUPABASE_URL = 'https://gtydbcskixdmjqbnwhvx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_7Gy9_gKjA-bFFke9PA1l5g_4CRh5939';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ---- حماية الكود من الفحص والعبث (Anti-Tamper & DevTools lock) ----
+document.addEventListener('contextmenu', e => e.preventDefault());
+document.addEventListener('keydown', e => {
+  if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J' || e.key === 'C')) || (e.ctrlKey && e.key === 'u')) {
+    e.preventDefault();
+  }
+});
+
+// ثوابت النظام
+const PAGES = [
+  { key:'dashboard', label:'لوحة التحكم' }, { key:'transactions', label:'تسجيل حركة' },
+  { key:'treasuries', label:'الخزائن' }, { key:'reports', label:'التقارير والحركات' },
+  { key:'suppliers', label:'الموردين' }, { key:'supplier_report', label:'تقرير الموردين' },
+  { key:'expense_report', label:'تقرير المصروفات' }, { key:'branches', label:'الفروع' },
+  { key:'categories', label:'الأسباب' }, { key:'custom_reports', label:'مصمم التقارير' },
+  { key:'users', label:'المستخدمين' }, { key:'roles', label:'الأدوار والصلاحيات' },
+  { key:'backup', label:'النسخ والأرشيف' },
+];
+
+const SUB_FLAGS = {
+  can_deposit:'تسجيل إيداع نقدي', can_withdraw:'تسجيل صرف ومصروفات',
+  can_transfer:'التحويل بين الخزائن', can_manage_suppliers:'إدارة حركات الموردين',
+  can_view_reports:'الاطلاع على التقارير', can_view_all_branches:'الاطلاع على كل الفروع',
+  can_approve:'اعتماد وتأكيد الحركات (Approval)', can_print:'طباعة الإيصالات والسندات'
+};
+
+const LABEL = { deposit:'إيداع', withdraw:'صرف', transfer_out:'تحويل صادر', transfer_in:'تحويل وارد', cheque:'شيك' };
+const MV_LABEL = { supply:'توريد بضاعة', payment:'سداد دفعة', return:'مرتجع بضاعة', debit_note:'إشعار خصم' };
+const SUPPLIER_ACTIONS = ['supply', 'payment', 'return', 'debit_note'];
+const VIEW_PAGE = {
+  dashboard:'dashboard', tx:'transactions', treasuries:'treasuries', reports:'reports',
+  suppliers:'suppliers', supplier_report:'supplier_report', expense_report:'expense_report',
+  branches:'branches', categories:'categories',
+  custom_reports:'custom_reports', users:'users', roles:'roles', backup:'backup'
+};
+
+const $ = id => document.getElementById(id);
+let me = null;
+let treasuries = [];
+let categories = [];
+let branches = [];
+let suppliers = [];
+const DEFAULT_ROLES = [
+  { role_key: 'admin', role_name: 'المدير العام للنظام' },
+  { role_key: 'branch_manager', role_name: 'مدير الفرع' },
+  { role_key: 'cashier', role_name: 'أمين خزينة / كاشير' },
+  { role_key: 'accountant', role_name: 'محاسب ومراجع مالي' }
+];
+let rolesList = [...DEFAULT_ROLES];
+let lastSavedTx = null;
+let isSubmittingTx = false;
+
+// Pagination state
+let repCurrentPage = 1;
+const repPageSize = 20;
+let repFilteredRows = [];
+
+// ---- دوال المساعدة ----
+function showMsg(text, ok) {
+  const m = $('msg');
+  m.innerHTML = (ok ? '<i class="fa-solid fa-circle-check"></i> ' : '<i class="fa-solid fa-triangle-exclamation"></i> ') + text;
+  m.className = 'msg ' + (ok ? 'ok' : 'err');
+  clearTimeout(showMsg.t);
+  showMsg.t = setTimeout(() => { m.className = 'msg'; }, 6000);
+}
+function fmt(n) { return Number(n || 0).toLocaleString('ar-EG', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+function el(tag, props = {}, children) {
+  const e = document.createElement(tag);
+  Object.assign(e, props);
+  if (children !== undefined && children !== null) {
+    if (Array.isArray(children)) {
+      children.forEach(c => {
+        if (c !== undefined && c !== null) {
+          if (c instanceof Node) {
+            e.append(c);
+          } else {
+            e.append(document.createTextNode(String(c)));
+          }
+        }
+      });
+    } else if (children instanceof Node) {
+      e.append(children);
+    } else {
+      e.textContent = children;
+    }
+  }
+  return e;
+}
+function cell(text, cls) { return el('td', cls ? { className: cls } : {}, text ?? '—'); }
+function fill(tbody, rows, cols, empty) {
+  tbody.replaceChildren();
+  if (!rows.length) {
+    const tr = el('tr'); tr.append(el('td', { colSpan: cols, className:'muted' }, empty)); tbody.append(tr); return;
+  }
+  rows.forEach(r => tbody.append(r));
+}
+function option(value, text) { return el('option', { value }, text); }
+function hasPage(key) { return !!(me && me.pages[key]); }
+function isAdmin() { return !!(me && me.role_key === 'admin'); }
+function canApprove() { return isAdmin() || !!(me && me.roles?.can_approve); }
+
+// ---- هروب النصوص قبل وضعها في HTML (نوافذ الطباعة) ----
+function esc(v) {
+  return String(v ?? '—')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+// ---- توقيت القاهرة: تحويل تاريخ (YYYY-MM-DD) لبداية/نهاية اليوم بتوقيت القاهرة ----
+function cairoBoundary(dateStr, endOfDay) {
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const wall = Date.UTC(y, m - 1, d, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0);
+  const p = Object.fromEntries(
+    new Intl.DateTimeFormat('en-US', { timeZone: 'Africa/Cairo', hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' })
+      .formatToParts(new Date(wall)).map(x => [x.type, x.value])
+  );
+  const asIfUtc = Date.UTC(+p.year, +p.month - 1, +p.day, +p.hour, +p.minute, +p.second);
+  const offset = asIfUtc - wall;           // فرق توقيت القاهرة في هذا اليوم (+2 أو +3 حسب الصيف)
+  return new Date(wall - offset).toISOString();
+}
+function cairoTodayStr() {
+  return new Intl.DateTimeFormat('en-CA', { timeZone: 'Africa/Cairo', year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
+}
+
+// ---- المبلغ بالحروف العربية (جنيه وقرش) ----
+const AR_ONES = ['', 'واحد', 'اثنان', 'ثلاثة', 'أربعة', 'خمسة', 'ستة', 'سبعة', 'ثمانية', 'تسعة'];
+const AR_TEENS = ['أحد عشر', 'اثنا عشر', 'ثلاثة عشر', 'أربعة عشر', 'خمسة عشر', 'ستة عشر', 'سبعة عشر', 'ثمانية عشر', 'تسعة عشر'];
+const AR_TENS = ['', 'عشرة', 'عشرون', 'ثلاثون', 'أربعون', 'خمسون', 'ستون', 'سبعون', 'ثمانون', 'تسعون'];
+const AR_HUNDREDS = ['', 'مائة', 'مائتان', 'ثلاثمائة', 'أربعمائة', 'خمسمائة', 'ستمائة', 'سبعمائة', 'ثمانمائة', 'تسعمائة'];
+function arUnder1000(n) {
+  const parts = [];
+  const h = Math.floor(n / 100), r = n % 100;
+  if (h) parts.push(AR_HUNDREDS[h]);
+  if (r) {
+    if (r < 10) parts.push(AR_ONES[r]);
+    else if (r < 20) parts.push(AR_TEENS[r - 11]);
+    else {
+      const t = Math.floor(r / 10), o = r % 10;
+      parts.push(o ? AR_ONES[o] + ' و' + AR_TENS[t] : AR_TENS[t]);
+    }
+  }
+  return parts.join(' و');
+}
+function arInt(n) {
+  if (n === 0) return 'صفر';
+  const parts = [];
+  const m = Math.floor(n / 1000000), th = Math.floor((n % 1000000) / 1000), rest = n % 1000;
+  if (m) parts.push(m === 1 ? 'مليون' : m === 2 ? 'مليونان' : m <= 10 ? AR_ONES[m] + ' ملايين' : arUnder1000(m) + ' مليون');
+  if (th) parts.push(th === 1 ? 'ألف' : th === 2 ? 'ألفان' : th <= 10 ? AR_ONES[th] + ' آلاف' : arUnder1000(th) + ' ألف');
+  if (rest) parts.push(arUnder1000(rest));
+  return parts.join(' و');
+}
+function tafqeet(num) {
+  const total = Math.round((Number(num) || 0) * 100);   // بالقرش كعدد صحيح لتفادي أخطاء الكسور
+  const pounds = Math.floor(total / 100), piasters = total % 100;
+  let txt = 'فقط ' + arInt(pounds) + ' جنيهاً';
+  if (piasters) txt += ' و' + arInt(piasters) + ' قرشاً';
+  return txt + ' مصرياً لا غير';
+}
+
+function applyNav() {
+  document.querySelectorAll('#nav button').forEach(b => {
+    const key = b.dataset.page;
+    b.classList.toggle('hidden', !hasPage(key));
+  });
+}
+
+function showView(view) {
+  const page = VIEW_PAGE[view];
+  if (!hasPage(page)) view = 'dashboard';
+  document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+  const target = $('v-' + view);
+  if (target) target.classList.remove('hidden');
+  document.querySelectorAll('#nav button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  const loaders = {
+    dashboard: loadDashboard, tx: loadTxForm, treasuries: loadTreasuries, reports: loadReports,
+    suppliers: loadSuppliers, supplier_report: loadSupplierReport, expense_report: loadExpenseReport,
+    branches: loadBranches, categories: loadCategories,
+    custom_reports: loadCustomReports, users: loadUsers, roles: loadRoles, backup: loadBackup
+  };
+  if (loaders[view]) loaders[view]();
+}
+
+async function refreshView() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) {
+    $('loginView').classList.remove('hidden');
+    $('nav').classList.add('hidden'); $('whoami').classList.add('hidden');
+    document.querySelectorAll('.view').forEach(v => v.classList.add('hidden'));
+    return;
+  }
+  $('loginView').classList.add('hidden');
+  $('nav').classList.remove('hidden'); $('whoami').classList.remove('hidden');
+  await loadProfile();
+}
+
+async function loadProfile() {
+  const { data: { user } } = await sb.auth.getUser();
+  const { data: p, error } = await sb.from('users')
+    .select('id, full_name, role_key, branch_id, roles(*)')
+    .eq('id', user.id).maybeSingle();
+  if (error || !p) {
+    showMsg('الحساب غير مرتبط بملف موظف', false);
+    await sb.auth.signOut(); return refreshView();
+  }
+  const { data: pa } = await sb.from('page_access').select('page_key, allowed').eq('role_key', p.role_key);
+  const pages = {};
+  PAGES.forEach(x => pages[x.key] = false);
+  (pa || []).forEach(x => pages[x.page_key] = x.allowed);
+  if (p.role_key === 'admin') PAGES.forEach(x => pages[x.key] = true);
+  // تقارير الموردين والمصروفات متاحة لكل من يملك صفحة التقارير أو الموردين
+  if (pages['reports'] || pages['suppliers']) {
+    pages['supplier_report'] = true;
+    pages['expense_report'] = true;
+  }
+  me = { ...p, roles: p.roles || {}, pages };
+  $('whoName').textContent = p.full_name;
+  $('whoRole').textContent = p.roles?.role_name || p.role_key;
+  await loadCommon();
+  applyNav();
+  const first = document.querySelector('#nav button:not(.hidden)');
+  showView(first ? first.dataset.view : 'dashboard');
+  startLiveUpdates();
+}
+
+// ---- التحديث اللحظي: أي تغيير في الحركات يحدّث الداش بورد وتقرير المصروفات المفتوح ----
+let liveChannel = null, liveTimer = null;
+function currentViewName() {
+  const v = document.querySelector('.view:not(.hidden)');
+  return v ? v.id.replace('v-', '') : null;
+}
+function startLiveUpdates() {
+  if (liveChannel) return;
+  liveChannel = sb.channel('live-transactions')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'transactions' }, () => {
+      clearTimeout(liveTimer);
+      liveTimer = setTimeout(() => {
+        const v = currentViewName();
+        if (v === 'dashboard') loadDashboard();
+        else if (v === 'expense_report') applyExpenseReportFilter();
+      }, 400);
+    })
+    .subscribe();
+}
+function stopLiveUpdates() {
+  clearTimeout(liveTimer);
+  liveChannel = null;
+  sb.removeAllChannels();
+}
+
+async function loadCommon() {
+  const [ts, cats, brs, sups, rls] = await Promise.all([
+    sb.from('treasuries').select('id, name, current_balance, is_active, branch_id, branches(name)').order('name'),
+    sb.from('transaction_categories').select('id, type, name, description, is_active').order('name'),
+    sb.from('branches').select('id, name, code, address, phone').order('name'),
+    sb.from('suppliers').select('id, name, phone, address, current_balance, is_active').order('name'),
+    sb.from('roles').select('*').order('role_key')
+  ]);
+  treasuries = ts.data || [];
+  categories = cats.data || [];
+  branches = brs.data || [];
+  suppliers = sups.data || [];
+  rolesList = (rls.data && rls.data.length > 0) ? rls.data : DEFAULT_ROLES;
+  fillSelects();
+  updateTxFields();
+}
+
+function fillSelects() {
+  for (const id of ['txTreasury', 'txTarget', 'rfTreasury', 'erTreasury']) {
+    const s = $(id); if (!s) continue;
+    const prev = s.value; s.replaceChildren();
+    if (id === 'rfTreasury' || id === 'erTreasury') s.append(option('', '— كل الخزائن —'));
+    treasuries.filter(t => t.is_active || id === 'rfTreasury' || id === 'erTreasury').forEach(t => s.append(option(t.id, t.name + (t.is_active ? '' : ' (موقوفة)'))));
+    if (prev) s.value = prev;
+  }
+  const sup = $('txSupplier');
+  if (sup) {
+    const prevSup = sup.value; sup.replaceChildren(option('', '— اختر المورد —'));
+    suppliers.filter(x => x.is_active).forEach(x => sup.append(option(x.id, x.name)));
+    if (prevSup) sup.value = prevSup;
+  }
+  document.querySelectorAll('.branchSel').forEach(s => {
+    s.replaceChildren(); branches.forEach(b => s.append(option(b.id, b.name)));
+  });
+  const nuRole = $('newUserRole');
+  if (nuRole) {
+    const prevRole = nuRole.value;
+    nuRole.replaceChildren();
+    const list = (rolesList && rolesList.length > 0) ? rolesList : DEFAULT_ROLES;
+    list.forEach(r => nuRole.append(option(r.role_key, r.role_name)));
+    if (prevRole && Array.from(nuRole.options).some(o => o.value === prevRole)) nuRole.value = prevRole;
+  }
+  const nuBranch = $('newUserBranch');
+  if (nuBranch) {
+    const prevB = nuBranch.value;
+    nuBranch.replaceChildren(option('', '— كل الفروع —'));
+    branches.forEach(b => nuBranch.append(option(b.id, b.name)));
+    if (prevB) nuBranch.value = prevB;
+  }
+  const nuTr = $('newUserTreasury');
+  if (nuTr) {
+    const prevT = nuTr.value;
+    nuTr.replaceChildren(option('', '— بدون خزينة مخصصة —'));
+    treasuries.forEach(t => nuTr.append(option(t.id, t.name)));
+    if (prevT) nuTr.value = prevT;
+  }
+}
+
+function updateTxFields() {
+  const a = $('actionSel').value;
+  const isTransfer = a === 'transfer';
+  const isCheque = a === 'cheque';
+  const isSupplier = SUPPLIER_ACTIONS.includes(a);
+  const needsCat = ['deposit', 'withdraw', 'cheque', 'payment', 'transfer'].includes(a);
+  const catType = a === 'deposit' ? 'deposit' : (a === 'transfer' ? 'transfer' : 'withdraw');
+
+  const cs = $('txCategory'); const prevCat = cs.value; cs.replaceChildren();
+  if (isTransfer) cs.append(option('', '— بدون سبب تحويل محدد —'));
+  categories.filter(c => c.type === catType && c.is_active).forEach(c => cs.append(option(c.id, c.name)));
+  if (prevCat) cs.value = prevCat;
+
+  // إظهار/إخفاء الحقول
+  $('categoryWrap').classList.toggle('hidden', !needsCat);
+  cs.required = needsCat && !isTransfer && a !== 'payment'; // عند payment: البند اختياري
+  $('targetWrap').classList.toggle('hidden', !isTransfer);
+  $('treasuryWrap').classList.toggle('hidden', isSupplier && a !== 'payment');
+  $('supplierWrap').classList.toggle('hidden', !(isSupplier || isCheque));
+  $('txSupplier').required = isSupplier; // مورد إلزامي لكل عمليات الموردين
+  $('invoiceWrap').classList.toggle('hidden', !['supply', 'return', 'debit_note', 'payment'].includes(a));
+  $('personWrap').classList.toggle('hidden', isSupplier || isCheque);
+  $('chequeWrap').classList.toggle('hidden', !isCheque);
+  $('txForm').chequeNo.required = isCheque;
+  $('txForm').bank.required = isCheque;
+  $('txForm').payee.required = isCheque;
+
+  // تلوين تلميح السياق حسب نوع الحركة
+  const btn = $('txBtn');
+  if (isSupplier) {
+    btn.style.background = a === 'payment' ? '#1d4ed8' : (a === 'supply' ? '#0f3d23' : '#6d28d9');
+  } else if (a === 'deposit') {
+    btn.style.background = '#166534';
+  } else {
+    btn.style.background = '';
+  }
+}
+
+// ---- لوحة التحكم (Dashboard) ----
+async function loadDashboard() {
+  await loadCommon();
+  const startIso = cairoBoundary(cairoTodayStr(), false);
+
+  // جلب إحصائيات اليوم + الحركات المعلقة والمؤكدة
+  const [{ data: todaysTx }, { data: todaysSup }, { data: recentTx }] = await Promise.all([
+    sb.from('transactions').select('treasury_id, type, amount, status').gte('created_at', startIso),
+    sb.from('supplier_movements').select('type, amount, status').eq('type', 'payment').gte('created_at', startIso),
+    sb.from('transactions')
+      .select('id, trans_number, type, amount, status, balance_after, person_name, created_at, treasuries!treasury_id(name)')
+      .order('created_at', { ascending: false }).limit(20)
+  ]);
+
+  // المقبوضات والمصروفات: المؤكد فقط (المعلق والمرفوض لا يُحسبان كنقدية فعلية)
+  let sumDep = 0, sumExp = 0, sumSup = 0;
+  (todaysTx || []).filter(r => r.status === 'confirmed').forEach(r => {
+    const amt = Number(r.amount) || 0;
+    if (r.type === 'deposit') sumDep += amt;
+    else if (r.type === 'withdraw' || r.type === 'cheque') sumExp += amt;
+  });
+  (todaysSup || []).filter(r => r.status === 'confirmed').forEach(r => { sumSup += Number(r.amount) || 0; });
+  $('kpiDeposits').textContent = fmt(sumDep) + ' ج.م';
+  $('kpiExpenses').textContent = fmt(sumExp) + ' ج.م';
+  $('kpiSuppliers').textContent = fmt(sumSup) + ' ج.م';
+
+  // حساب الرصيد الفعلي المؤكد الإجمالي
+  const totalActual = treasuries.reduce((acc, t) => acc + Number(t.current_balance || 0), 0);
+  $('kpiTreasuriesTotal').textContent = fmt(totalActual) + ' ج.م';
+
+  // عرض جدول الخزائن بنظام الرصيد المزدوج
+  const tRows = await Promise.all(treasuries.map(async t => {
+    const { data: projBal } = await sb.rpc('get_treasury_projected_balance', { t_id: t.id });
+    const actual = Number(t.current_balance || 0);
+    const projected = Number(projBal !== null ? projBal : actual);
+    const diff = projected - actual;
+    const tr = el('tr');
+    tr.append(
+      cell(t.name, 'bold'),
+      cell(fmt(actual) + ' ج.م', 'in'),
+      cell((diff >= 0 ? '+' : '') + fmt(diff) + ' ج.م', diff >= 0 ? 'in' : 'out'),
+      cell(fmt(projected) + ' ج.م', 'bold')
+    );
+    return tr;
+  }));
+  fill($('dashTreasuryBody'), tRows, 4, 'لا توجد خزائن');
+
+  // جدول آخر الحركات مع أزرار الاعتماد
+  const txRows = (recentTx || []).map(r => {
+    const tr = el('tr');
+    const isIn = r.type === 'deposit' || r.type === 'transfer_in';
+    const statusBadge = el('span', { className: 'badge ' + r.status },
+      r.status === 'confirmed' ? '🟢 مؤكد' : (r.status === 'pending' ? '🟡 معلق' : '🔴 مرفوض'));
+
+    const actions = el('td');
+    if (r.status === 'pending' && r.type === 'transfer_in') {
+      actions.append(el('span', { className:'muted', style:'font-size:12px;' }, 'يُعتمد مع الحركة الصادرة'));
+    } else if (r.status === 'pending' && canApprove()) {
+      const approveBtn = el('button', { className:'sm' });
+      approveBtn.innerHTML = '<i class="fa-solid fa-check"></i> اعتماد';
+      approveBtn.onclick = async () => {
+        approveBtn.disabled = true;
+        const { error } = await sb.rpc('confirm_transaction', { p_trans_id: r.id, p_action: 'approve' });
+        if (error) return showMsg(error.message, false);
+        showMsg('تم اعتماد وتأكيد الحركة بنجاح', true);
+        loadDashboard();
+      };
+
+      const rejectBtn = el('button', { className:'sm danger', style:'margin-right:4px;' });
+      rejectBtn.innerHTML = '<i class="fa-solid fa-xmark"></i> رفض';
+      rejectBtn.onclick = async () => {
+        if (!confirm('هل أنت متأكد من رفض هذه الحركة؟')) return;
+        rejectBtn.disabled = true;
+        const { error } = await sb.rpc('confirm_transaction', { p_trans_id: r.id, p_action: 'reject' });
+        if (error) return showMsg(error.message, false);
+        showMsg('تم رفض الحركة', true);
+        loadDashboard();
+      };
+      actions.append(approveBtn, rejectBtn);
+    } else if (r.status !== 'rejected') {
+      const printBtn = el('button', { className:'sm secondary' });
+      printBtn.innerHTML = '<i class="fa-solid fa-print"></i> ريسيت';
+      printBtn.onclick = () => openReceiptModal(r);
+      actions.append(printBtn);
+    } else {
+      actions.append(el('span', { className:'muted', style:'font-size:12px;' }, 'ملغي'));
+    }
+
+    tr.append(
+      cell(r.trans_number, 'in'), cell(LABEL[r.type] || r.type), cell(r.treasuries?.name),
+      cell((isIn ? '+' : '−') + fmt(r.amount), isIn ? 'in' : 'out'),
+      el('td', {}, statusBadge), cell(r.person_name),
+      cell(new Date(r.created_at).toLocaleString('ar-EG')), actions
+    );
+    return tr;
+  });
+  fill($('dashTx'), txRows, 8, 'لا توجد حركات مسجلة');
+}
+
+// ---- تسجيل الحركة مع منع التكرار اللحظي (Double-click & Idempotency protection) ----
+async function loadTxForm() { await loadCommon(); }
+
+$('txForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (isSubmittingTx) return; // قفل لحظي لمنع الضغط المزدوج
+  const f = e.target;
+  const a = f.action.value;
+  const amount = parseFloat(f.amount.value);
+  if (!(amount > 0)) return showMsg('المبلغ يجب أن يكون أكبر من الصفر', false);
+  if (SUPPLIER_ACTIONS.includes(a) && !f.supplier.value) return showMsg('⚠️ اختر المورد أولاً — حقل إلزامي لهذا النوع من الحركات', false);
+  if (a === 'payment' && !f.treasury.value) return showMsg('⚠️ اختر الخزينة أولاً — الدفعة تحتاج خزينة صرف', false);
+  if ((a === 'withdraw' || a === 'deposit') && !f.category.value) return showMsg('⚠️ اختر البند/السبب — حقل إلزامي لهذا النوع', false);
+  if (a === 'transfer' && !f.target.value) return showMsg('⚠️ اختر الخزينة المحول إليها', false);
+
+  isSubmittingTx = true;
+  const btn = $('txBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري تسجيل وتأمين الحركة...';
+
+  // توليد مفتاح منع تكرار فريد (Client Idempotency Key)
+  const idempotencyKey = 'req_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+  let res;
+
+  try {
+    if (a === 'cheque') {
+      res = await sb.rpc('create_cheque_payment', {
+        p_treasury: f.treasury.value || null, p_amount: amount, p_category: f.category.value || null,
+        p_cheque_no: f.chequeNo.value.trim(), p_bank: f.bank.value.trim(), p_payee: f.payee.value.trim(),
+        p_due_date: f.dueDate.value || null, p_supplier: f.supplier.value || null,
+        p_notes: f.notes.value.trim() || null, p_idempotency_key: idempotencyKey
+      });
+    } else if (SUPPLIER_ACTIONS.includes(a)) {
+      res = await sb.rpc('create_supplier_movement', {
+        p_supplier: f.supplier.value || null, p_type: a, p_amount: amount,
+        p_treasury: a === 'payment' ? (f.treasury.value || null) : null,
+        p_category: a === 'payment' ? (f.category.value || null) : null,
+        p_invoice: f.invoice.value.trim() || null, p_notes: f.notes.value.trim() || null,
+        p_idempotency_key: idempotencyKey
+      });
+    } else {
+      const needsCat = a === 'deposit' || a === 'withdraw' || a === 'transfer';
+      res = await sb.rpc('create_transaction', {
+        p_action: a, p_treasury_id: f.treasury.value || null, p_amount: amount,
+        p_category_id: (needsCat && f.category.value) ? f.category.value : null,
+        p_person_name: f.person.value.trim() || null, p_notes: f.notes.value.trim() || null,
+        p_target_id: a === 'transfer' ? (f.target.value || null) : null,
+        p_idempotency_key: idempotencyKey
+      });
+    }
+
+    if (res.error) throw res.error;
+
+    const num = res.data?.trans_number || res.data?.movement_number || '—';
+    lastSavedTx = {
+      trans_number: num, amount, type: a,
+      treasuryName: f.treasury ? f.treasury.options[f.treasury.selectedIndex]?.text : '',
+      person_name: f.person.value || f.payee?.value || f.supplier?.options[f.supplier?.selectedIndex]?.text || '—',
+      notes: f.notes.value || '',
+      created_at: new Date().toISOString()
+    };
+
+    // إشعار النجاح البارز
+    $('txSuccessInfo').textContent = `رقم السند: ${num} | المبلغ: ${fmt(amount)} ج.م (الحالة: معلق وبانتظار الاعتماد)`;
+    $('txSuccessBanner').classList.remove('hidden');
+    $('txLastPrintBtn').onclick = () => openReceiptModal(lastSavedTx);
+    showMsg(`✅ تم تسجيل الحركة بنجاح برقم فريد: ${num}`, true);
+
+    // التفريغ الكامل للنموذج
+    f.reset();
+    fillSelects();
+    updateTxFields();
+    await loadCommon();
+  } catch (err) {
+    showMsg('خطأ في التسجيل: ' + (err.message || err), false);
+  } finally {
+    isSubmittingTx = false;
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-check"></i> تأكيد وتسجيل الحركة';
+  }
+});
+
+// ---- التقارير مع الفلترة المتعددة والصفحات (Max 20 rows Pagination) ----
+async function loadReports() {
+  await loadCommon();
+  await applyReportFilter();
+}
+
+async function applyReportFilter() {
+  const trId = $('rfTreasury').value;
+  const status = $('rfStatus').value;
+  const type = $('rfType').value;
+  const from = $('rfFrom').value;
+  const to = $('rfTo').value;
+  const qText = ($('rfSearch').value || '').trim().toLowerCase();
+
+  let q = sb.from('transactions')
+    .select('id, created_at, trans_number, type, status, amount, balance_after, person_name, notes, treasuries!treasury_id(name), transaction_categories(name)')
+    .order('created_at', { ascending: false });
+
+  if (trId) q = q.eq('treasury_id', trId);
+  if (status) q = q.eq('status', status);
+  if (type) q = q.eq('type', type);
+  if (from) q = q.gte('created_at', cairoBoundary(from, false));
+  if (to) q = q.lte('created_at', cairoBoundary(to, true));
+
+  const { data, error } = await q;
+  if (error) return showMsg(error.message, false);
+
+  repFilteredRows = (data || []).filter(r => {
+    if (!qText) return true;
+    return (r.trans_number || '').toLowerCase().includes(qText) ||
+           (r.person_name || '').toLowerCase().includes(qText) ||
+           (r.notes || '').toLowerCase().includes(qText);
+  });
+
+  repCurrentPage = 1;
+  renderReportPage();
+}
+
+function renderReportPage() {
+  const total = repFilteredRows.length;
+  const totalPages = Math.max(1, Math.ceil(total / repPageSize));
+  if (repCurrentPage > totalPages) repCurrentPage = totalPages;
+
+  const start = (repCurrentPage - 1) * repPageSize;
+  const pageRows = repFilteredRows.slice(start, start + repPageSize);
+
+  $('repCurrentCount').textContent = `${pageRows.length} من أصل ${total}`;
+  $('repPageNum').textContent = repCurrentPage;
+  $('repTotalPages').textContent = totalPages;
+  $('repPrevBtn').disabled = repCurrentPage <= 1;
+  $('repNextBtn').disabled = repCurrentPage >= totalPages;
+
+  const rows = pageRows.map(r => {
+    const isIn = r.type === 'deposit' || r.type === 'transfer_in';
+    const tr = el('tr');
+    const statusBadge = el('span', { className: 'badge ' + r.status },
+      r.status === 'confirmed' ? '🟢 مؤكد' : (r.status === 'pending' ? '🟡 معلق' : '🔴 مرفوض'));
+
+    const actions = el('td');
+    if (r.status !== 'rejected') {
+      const pBtn = el('button', { className:'sm secondary' });
+      pBtn.innerHTML = '<i class="fa-solid fa-print"></i>';
+      pBtn.title = 'طباعة السند';
+      pBtn.onclick = () => openReceiptModal(r);
+      actions.append(pBtn);
+    } else {
+      actions.append(el('span', { className:'muted', style:'font-size:12px;' }, 'مرفوض'));
+    }
+
+    if (r.status === 'pending' && r.type !== 'transfer_in' && canApprove()) {
+      const cBtn = el('button', { className:'sm', style:'margin-right:4px;' });
+      cBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+      cBtn.onclick = async () => {
+        const { error } = await sb.rpc('confirm_transaction', { p_trans_id: r.id, p_action: 'approve' });
+        if (error) return showMsg(error.message, false);
+        showMsg('تم اعتماد وتأكيد الحركة', true); applyReportFilter();
+      };
+      actions.append(cBtn);
+    }
+
+    tr.append(
+      cell(r.trans_number, 'in'),
+      cell(new Date(r.created_at).toLocaleDateString('ar-EG')),
+      cell(LABEL[r.type] || r.type),
+      cell(r.treasuries?.name),
+      cell(r.transaction_categories?.name || r.notes),
+      cell(r.person_name),
+      cell(isIn ? fmt(r.amount) : '', 'in'),
+      cell(!isIn ? fmt(r.amount) : '', 'out'),
+      el('td', {}, statusBadge),
+      cell(fmt(r.balance_after)),
+      actions
+    );
+    return tr;
+  });
+  fill($('repBody'), rows, 11, 'لا توجد حركات مطابقة لشروط الفلترة');
+}
+
+$('rfApplyBtn').onclick = applyReportFilter;
+$('rfResetBtn').onclick = () => {
+  $('rfTreasury').value = ''; $('rfStatus').value = ''; $('rfType').value = '';
+  $('rfFrom').value = ''; $('rfTo').value = ''; $('rfSearch').value = '';
+  applyReportFilter();
+};
+$('repPrevBtn').onclick = () => { if (repCurrentPage > 1) { repCurrentPage--; renderReportPage(); } };
+$('repNextBtn').onclick = () => { repCurrentPage++; renderReportPage(); };
+
+// ---- طباعة الريسيت الاحترافي (Thermal 80mm & A4) ----
+function openReceiptModal(r) {
+  if (r.status === 'rejected') {
+    showMsg('لا يمكن طباعة إيصال لحركة مرفوضة ومسقطة من الحسابات.', false);
+    return;
+  }
+  $('rcTransNum').textContent = r.trans_number || '—';
+  $('rcDate').textContent = new Date(r.created_at || Date.now()).toLocaleString('ar-EG');
+  $('rcTreasury').textContent = r.treasuryName || r.treasuries?.name || '—';
+  $('rcPerson').textContent = r.person_name || '—';
+  $('rcCategory').textContent = r.transaction_categories?.name || r.notes || LABEL[r.type] || '—';
+  $('rcAmount').textContent = fmt(r.amount) + ' ج.م';
+  $('rcTafqeet').textContent = tafqeet(r.amount);
+  $('rcNotes').textContent = r.notes || '—';
+  $('rcDocTitle').textContent = 'سند ' + (LABEL[r.type] || 'حركة مالية');
+  $('rcStamp').textContent = r.status === 'confirmed' ? '✓ معتمد رسمياً' : 'قيد المراجعة والاعتماد';
+  $('rcStamp').style.color = r.status === 'confirmed' ? '#155724' : '#b45309';
+  $('rcStamp').style.borderColor = r.status === 'confirmed' ? '#155724' : '#b45309';
+  $('receiptModal').classList.remove('hidden');
+}
+
+// ---- مصمم التقارير المخصص (Custom Report Builder) ----
+const REPORT_COL_DEF = {
+  transactions: [
+    { key:'trans_number', label:'رقم السند' }, { key:'created_at', label:'التاريخ والوقت' },
+    { key:'type', label:'نوع الحركة' }, { key:'amount', label:'المبلغ' },
+    { key:'status', label:'حالة الاعتماد' }, { key:'treasury_name', label:'الخزينة' },
+    { key:'category_name', label:'السبب / البند' }, { key:'person_name', label:'الشخص' },
+    { key:'balance_after', label:'الرصيد بعدها' }, { key:'notes', label:'الملاحظات' }
+  ],
+  suppliers: [
+    { key:'name', label:'اسم المورد' }, { key:'phone', label:'التليفون' },
+    { key:'address', label:'العنوان' }, { key:'current_balance', label:'الرصيد المستحق' }
+  ],
+  treasuries: [
+    { key:'name', label:'اسم الخزينة' }, { key:'branch_name', label:'الفرع' },
+    { key:'current_balance', label:'الرصيد الفعلي' }, { key:'is_active', label:'الحالة' }
+  ]
+};
+
+function renderCrColumns() {
+  const src = $('crDataSource').value;
+  const box = $('crColumnsBox'); box.replaceChildren();
+  (REPORT_COL_DEF[src] || []).forEach(c => {
+    const cb = el('input', { type:'checkbox', value: c.key, checked: true });
+    const lab = el('label', { className:'row' });
+    lab.append(cb, document.createTextNode(' ' + c.label));
+    box.append(lab);
+  });
+}
+$('crDataSource').onchange = renderCrColumns;
+
+async function loadCustomReports() {
+  renderCrColumns();
+  const { data: list, error } = await sb.from('report_templates').select('*').order('name');
+  if (error) return;
+  const rows = (list || []).map(tpl => {
+    const tr = el('tr');
+    const actions = el('td');
+    const runBtn = el('button', { className:'sm' });
+    runBtn.innerHTML = '<i class="fa-solid fa-play"></i> تشغيل وطباعة';
+    runBtn.onclick = () => runCustomReport(tpl);
+    actions.append(runBtn);
+    tr.append(
+      cell(tpl.name), cell(tpl.data_source),
+      cell(tpl.page_format === 'portrait' ? 'طولي A4' : (tpl.page_format === 'landscape' ? 'عرضي A4' : 'ريسيت حراري')),
+      cell(tpl.font_size), actions
+    );
+    return tr;
+  });
+  fill($('customRepListBody'), rows, 5, 'لا توجد تقارير مصممة بعد');
+}
+
+$('customReportForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target;
+  const selectedCols = Array.from($('crColumnsBox').querySelectorAll('input:checked')).map(cb => cb.value);
+  if (!selectedCols.length) return showMsg('اختر عموداً واحداً على الأقل للتقرير', false);
+
+  const { error } = await sb.from('report_templates').insert({
+    name: f.repName.value.trim(),
+    data_source: f.dataSource.value,
+    columns: selectedCols,
+    page_format: f.pageFormat.value,
+    font_size: f.fontSize.value
+  });
+  if (error) return showMsg(error.message, false);
+  showMsg('تم حفظ قالب التقرير بنجاح', true);
+  f.reset(); loadCustomReports();
+});
+
+async function runCustomReport(tpl) {
+  showMsg('جاري جلب بيانات التقرير المصمم...', true);
+  let data = [];
+  if (tpl.data_source === 'transactions') {
+    const { data: d } = await sb.from('transactions').select('trans_number, created_at, type, amount, status, balance_after, person_name, notes, treasuries!treasury_id(name), transaction_categories(name)').limit(500);
+    data = (d || []).map(r => ({
+      ...r, treasury_name: r.treasuries?.name, category_name: r.transaction_categories?.name
+    }));
+  } else if (tpl.data_source === 'suppliers') {
+    const { data: d } = await sb.from('suppliers').select('*'); data = d || [];
+  } else {
+    const { data: d } = await sb.from('treasuries').select('name, current_balance, is_active, branches(name)');
+    data = (d || []).map(r => ({ ...r, branch_name: r.branches?.name }));
+  }
+
+  // إنشاء صفحة تقرير سريعة للطباعة بمقاس الورقة المحدد
+  const win = window.open('', '_blank');
+  const cols = (REPORT_COL_DEF[tpl.data_source] || []).filter(c => tpl.columns.includes(c.key));
+  let tableHtml = `<table border="1" style="width:100%; border-collapse:collapse; font-size:${tpl.font_size === 'small'?'11px':(tpl.font_size==='large'?'15px':'13px')}"><thead><tr style="background:#f0fdf4;">`;
+  cols.forEach(c => tableHtml += `<th>${c.label}</th>`);
+  tableHtml += '</tr></thead><tbody>';
+  data.forEach(r => {
+    tableHtml += '<tr>';
+    cols.forEach(c => tableHtml += `<td>${esc(r[c.key])}</td>`);
+    tableHtml += '</tr>';
+  });
+  tableHtml += '</tbody></table>';
+
+  win.document.write(`
+    <html dir="rtl"><head><title>${esc(tpl.name)}</title>
+    <style>@page { size: ${tpl.page_format === 'landscape' ? 'landscape' : 'portrait'}; margin: 10mm; } body { font-family: Tahoma, sans-serif; }</style>
+    </head><body>
+      <h2 style="text-align:center;">أبو الفضل للألبان - ${esc(tpl.name)}</h2>
+      ${tableHtml}
+      <script>window.onload = () => { window.print(); }<\/script>
+    </body></html>
+  `);
+}
+
+// ---- النسخ الاحتياطي والأرشيف وتدوير الأرصدة (Backup & Rollover) ----
+async function loadBackup() {}
+
+$('btnExportJSON').onclick = async () => {
+  const { data, error } = await sb.rpc('export_full_system_backup');
+  if (error) return showMsg(error.message, false);
+  const jsonStr = JSON.stringify(data, null, 2);
+  const blob = new Blob([jsonStr], { type: 'application/json' });
+  const a = el('a', { href: URL.createObjectURL(blob), download: `AbuElFadl_Backup_${new Date().toISOString().slice(0,10)}.json` });
+  a.click();
+  showMsg('تم تصدير ملف النسخة الاحتياطية JSON بنجاح', true);
+};
+
+$('btnExportExcelAll').onclick = async () => {
+  showMsg('جاري تجميع كل جداول وسجلات النظام في ملف Excel...', true);
+  const [tx, sups, trs, brs, cats] = await Promise.all([
+    sb.from('transactions').select('trans_number, created_at, type, amount, status, balance_after, person_name, notes'),
+    sb.from('suppliers').select('name, phone, current_balance, is_active'),
+    sb.from('treasuries').select('name, current_balance, opening_balance, is_active'),
+    sb.from('branches').select('name, code, phone, address'),
+    sb.from('transaction_categories').select('name, type, description')
+  ]);
+
+  const wb = XLSX.utils.book_new();
+  if (tx.data) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(tx.data), "الحركات النقدية");
+  if (sups.data) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sups.data), "الموردين");
+  if (trs.data) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(trs.data), "الخزائن");
+  if (brs.data) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(brs.data), "الفروع");
+  if (cats.data) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cats.data), "البنود المالية");
+
+  XLSX.writeFile(wb, `سجلات_أبو_الفضل_الشاملة_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showMsg('تم تصدير ملف Excel الشامل متعدد الصفحات بنجاح', true);
+};
+
+// تحميل قالب Excel للاستيراد
+$('btnDownloadTemplate').onclick = () => {
+  const wb = XLSX.utils.book_new();
+  const sampleSuppliers = [
+    { 'الاسم': 'شركة الأمل للألبان', 'التليفون': '01000000001', 'العنوان': 'القاهرة', 'الرصيد الافتتاحي': 5000 },
+    { 'الاسم': 'مزرعة الخير', 'التليفون': '01100000002', 'العنوان': 'المنوفية', 'الرصيد الافتتاحي': 0 }
+  ];
+  const sampleTreasuries = [
+    { 'اسم الخزينة': 'خزينة المحل الرئيسية', 'الرصيد الافتتاحي': 10000 },
+    { 'اسم الخزينة': 'خزينة المصنع', 'الرصيد الافتتاحي': 2500 }
+  ];
+  const sampleCategories = [
+    { 'نوع البند (withdraw/deposit/transfer)': 'withdraw', 'اسم البند': 'فاتورة كهرباء', 'الوصف': 'مصاريف شهرية' },
+    { 'نوع البند (withdraw/deposit/transfer)': 'deposit', 'اسم البند': 'مبيعات جملة', 'الوصف': 'إيراد نقدي' }
+  ];
+
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sampleSuppliers), "الموردين");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sampleTreasuries), "الخزائن");
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sampleCategories), "البنود المالية");
+
+  XLSX.writeFile(wb, `قالب_استيراد_بيانات_أبو_الفضل.xlsx`);
+  showMsg('تم تحميل قالب الاستيراد بنجاح. يمكنك ملء البيانات ورفع الملف.', true);
+};
+
+// معالجة استرداد ورفع البيانات من ملف Excel أو JSON
+$('importFileInput').onchange = async e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const statusEl = $('importStatus');
+  statusEl.style.color = '#155724';
+  statusEl.textContent = 'جاري قراءة واستيراد البيانات من الملف...';
+
+  try {
+    if (file.name.endsWith('.json')) {
+      const text = await file.text();
+      const json = JSON.parse(text);
+      let count = 0, skipped = 0;
+      const errs = [];
+      // استيراد الموردين (السجلات الموجودة لا تُعدَّل - الأرصدة تتغير بالحركات فقط)
+      if (Array.isArray(json.suppliers)) {
+        for (const s of json.suppliers) {
+          if (s.name) {
+            const { data: ins, error: se } = await sb.from('suppliers').upsert({
+              name: s.name.trim(), phone: s.phone || null, address: s.address || null,
+              opening_balance: Number(s.opening_balance) || 0,
+              current_balance: Number(s.opening_balance) || 0
+            }, { onConflict: 'name', ignoreDuplicates: true }).select('id');
+            if (se) errs.push(se.message);
+            else { count += (ins || []).length; skipped += 1 - (ins || []).length; }
+          }
+        }
+      }
+      // استيراد الخزائن
+      if (Array.isArray(json.treasuries)) {
+        let defBranch = branches[0]?.id || null;
+        if (!defBranch) {
+          const { data: b } = await sb.from('branches').select('id').limit(1).maybeSingle();
+          defBranch = b?.id || null;
+        }
+        for (const t of json.treasuries) {
+          if (t.name) {
+            const { data: ins, error: te } = await sb.from('treasuries').upsert({
+              name: t.name.trim(), branch_id: t.branch_id || defBranch,
+              opening_balance: Number(t.opening_balance) || 0,
+              current_balance: Number(t.opening_balance) || 0
+            }, { onConflict: 'branch_id,name', ignoreDuplicates: true }).select('id');
+            if (te) errs.push(te.message);
+            else { count += (ins || []).length; skipped += 1 - (ins || []).length; }
+          }
+        }
+      }
+      const msg = `✅ تم استيراد ${count} سجل` + (skipped ? ` وتخطّي ${skipped} موجود` : '') + (errs.length ? ` — ❌ فشل ${errs.length}: ${errs[0]}` : '');
+      statusEl.textContent = msg;
+      showMsg(msg, errs.length === 0);
+    } else {
+      // Excel File Import
+      const buffer = await file.arrayBuffer();
+      const wb = XLSX.read(buffer, { type: 'array' });
+      let supCount = 0, trCount = 0, catCount = 0, skipCount = 0, excelErr = '';
+
+      // شيت الموردين
+      if (wb.Sheets['الموردين']) {
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets['الموردين']);
+        for (const r of rows) {
+          const name = (r['الاسم'] || r['اسم المورد'] || r['name'] || '').trim();
+          if (name) {
+            const ob = parseFloat(r['الرصيد الافتتاحي'] || r['opening_balance'] || 0) || 0;
+            const { data: ins, error } = await sb.from('suppliers').upsert({
+              name,
+              phone: String(r['التليفون'] || r['phone'] || '').trim() || null,
+              address: String(r['العنوان'] || r['address'] || '').trim() || null,
+              opening_balance: ob,
+              current_balance: ob
+            }, { onConflict: 'name', ignoreDuplicates: true }).select('id');
+            if (error) excelErr = error.message;
+            else { supCount += (ins || []).length; skipCount += 1 - (ins || []).length; }
+          }
+        }
+      }
+
+      // شيت الخزائن
+      if (wb.Sheets['الخزائن']) {
+        let defBranch = branches[0]?.id || null;
+        if (!defBranch) {
+          const { data: b } = await sb.from('branches').select('id').limit(1).maybeSingle();
+          defBranch = b?.id || null;
+        }
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets['الخزائن']);
+        for (const r of rows) {
+          const name = (r['اسم الخزينة'] || r['name'] || '').trim();
+          if (name) {
+            const ob = parseFloat(r['الرصيد الافتتاحي'] || r['opening_balance'] || 0) || 0;
+            const { data: ins, error } = await sb.from('treasuries').upsert({
+              name,
+              branch_id: defBranch,
+              opening_balance: ob,
+              current_balance: ob
+            }, { onConflict: 'branch_id,name', ignoreDuplicates: true }).select('id');
+            if (error) excelErr = error.message;
+            else { trCount += (ins || []).length; skipCount += 1 - (ins || []).length; }
+          }
+        }
+      }
+
+      // شيت البنود
+      if (wb.Sheets['البنود المالية']) {
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets['البنود المالية']);
+        for (const r of rows) {
+          const name = (r['اسم البند'] || r['name'] || '').trim();
+          let type = (r['نوع البند (withdraw/deposit/transfer)'] || r['type'] || 'withdraw').trim().toLowerCase();
+          if (!['withdraw', 'deposit', 'transfer'].includes(type)) type = 'withdraw';
+          if (name) {
+            const { data: ins, error } = await sb.from('transaction_categories').upsert({
+              type, name, description: String(r['الوصف'] || '').trim() || null
+            }, { onConflict: 'type,name', ignoreDuplicates: true }).select('id');
+            if (error) excelErr = error.message;
+            else { catCount += (ins || []).length; skipCount += 1 - (ins || []).length; }
+          }
+        }
+      }
+
+      const msg = `✅ تم استيراد: ${supCount} مورد، ${trCount} خزينة، ${catCount} بند` +
+                  (skipCount ? ` — وتخطّي ${skipCount} موجود` : '') +
+                  (excelErr ? ` — ❌ خطأ: ${excelErr}` : '');
+      statusEl.textContent = msg;
+      showMsg(msg, !excelErr);
+    }
+    await loadCommon();
+  } catch (err) {
+    statusEl.style.color = '#b91c1c';
+    statusEl.textContent = '❌ حدث خطأ أثناء الاستيراد: ' + err.message;
+    showMsg('فشل الاستيراد: ' + err.message, false);
+  } finally {
+    e.target.value = '';
+  }
+};
+
+// تدوير الأرصدة وتصفير الحركات (Master Key Gate)
+$('masterCleanForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const word = e.target.confirmWord.value.trim();
+  if (word !== 'تدوير') return showMsg('اكتب كلمة التأكيد «تدوير» بالضبط', false);
+  if (!confirm('⚠️ تحذير شديد الأهمية:\nهل أنت متأكد تماماً من تدوير الأرصدة إلى أول المدة ومسح الحركات القديمة؟\nلا يمكن الرجوع عن هذه الخطوة!')) return;
+
+  // نسخة احتياطية قبل أي حاجة
+  const { data: backup, error: bErr } = await sb.rpc('export_full_system_backup');
+  if (bErr || !backup) return showMsg('تعذر إنشاء النسخة الاحتياطية، تم إلغاء العملية: ' + (bErr?.message || ''), false);
+  const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+  const a = el('a', { href: URL.createObjectURL(blob), download: `AbuElFadl_Before_Rollover_${new Date().toISOString().slice(0,16).replace(/[:T]/g,'-')}.json` });
+  a.click();
+
+  const { data, error } = await sb.rpc('master_system_clean', { p_confirm: word });
+  if (error) return showMsg(error.message, false);
+  alert(data.message || 'تمت العملية بنجاح');
+  e.target.reset();
+  loadCommon(); loadDashboard();
+});
+
+// بقية النماذج
+$('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target; $('loginBtn').disabled = true;
+  const identifier = f.email.value.trim();
+  // نجيب الإيميل الفعلي للمستخدم من الداتابيز (أو الإيميل نفسه لو اتكتب)
+  const { data: resolved, error: rErr } = await sb.rpc('resolve_login_email', { p_identifier: identifier });
+  const email = (!rErr && resolved) ? resolved : (identifier.includes('@') ? identifier : identifier.toLowerCase() + '@abufadl.com');
+  const { error } = await sb.auth.signInWithPassword({ email: email, password: f.password.value });
+  $('loginBtn').disabled = false;
+  if (error) return showMsg('بيانات الدخول غير صحيحة (تأكد من اسم المستخدم أو البريد وكلمة المرور)', false);
+  f.reset(); refreshView();
+});
+$('logoutBtn').onclick = async () => { await sb.auth.signOut(); refreshView(); };
+document.querySelectorAll('#nav button').forEach(b => b.onclick = () => showView(b.dataset.view));
+$('actionSel').onchange = updateTxFields;
+
+$('treasuryForm').onsubmit = async e => {
+  e.preventDefault(); const f = e.target;
+  if (!f.branch.value) return showMsg('اختر الفرع أولاً', false);
+  const { error } = await sb.from('treasuries').insert({
+    name: f.name.value.trim(),
+    branch_id: f.branch.value,
+    opening_balance: parseFloat(f.opening.value) || 0,
+    current_balance: parseFloat(f.opening.value) || 0
+  });
+  if (error) return showMsg(error.message, false);
+  showMsg('تمت إضافة الخزينة بنجاح', true); f.reset(); loadTreasuries();
+};
+
+$('supForm').onsubmit = async e => {
+  e.preventDefault(); const f = e.target;
+  const { error } = await sb.from('suppliers').insert({ name: f.name.value.trim(), phone: f.phone.value.trim()||null, address: f.address.value.trim()||null, opening_balance: parseFloat(f.opening.value)||0, current_balance: parseFloat(f.opening.value)||0 });
+  if (error) return showMsg(error.message, false);
+  showMsg('تمت إضافة المورد بنجاح', true); f.reset(); loadSuppliers();
+};
+
+$('catForm').onsubmit = async e => {
+  e.preventDefault(); const f = e.target;
+  const { error } = await sb.from('transaction_categories').insert({ type: f.type.value, name: f.name.value.trim(), description: f.description.value.trim()||null });
+  if (error) return showMsg(error.message, false);
+  showMsg('تمت إضافة البند بنجاح', true); f.reset(); loadCategories(); loadCommon();
+};
+
+$('branchForm').onsubmit = async e => {
+  e.preventDefault(); const f = e.target;
+  const { error } = await sb.from('branches').insert({ name: f.name.value.trim(), code: f.code.value.trim(), address: f.address.value.trim()||null, phone: f.phone.value.trim()||null });
+  if (error) return showMsg(error.message, false);
+  showMsg('تمت إضافة الفرع بنجاح', true); f.reset(); loadBranches();
+};
+
+$('newRoleForm').onsubmit = async e => {
+  e.preventDefault(); const f = e.target;
+  const { error } = await sb.from('roles').insert({ role_key: f.roleKey.value.trim().toLowerCase(), role_name: f.roleName.value.trim() });
+  if (error) return showMsg(error.message, false);
+  showMsg('تمت إضافة الدور الوظيفي بنجاح', true); f.reset(); loadRoles();
+};
+
+$('userCreateForm').onsubmit = async e => {
+  e.preventDefault(); const f = e.target;
+  const btn = f.querySelector('button[type=submit]'); btn.disabled = true;
+  try {
+    const { error } = await sb.rpc('admin_create_user', {
+      p_email: f.email.value.trim().toLowerCase(), p_password: f.password.value,
+      p_full_name: f.fullName.value.trim(), p_username: f.username.value.trim().toLowerCase(),
+      p_role_key: f.roleKey.value, p_branch_id: f.branchId.value||null, p_treasury_id: f.treasuryId.value||null
+    });
+    if (error) throw error;
+    showMsg('تم إنشاء حساب الموظف بنجاح', true); f.reset(); loadUsers();
+  } catch (err) {
+    showMsg('خطأ في إضافة المستخدم: ' + err.message, false);
+  } finally { btn.disabled = false; }
+};
+
+// شاشات عرض الفروع والموردين والخزائن والمستخدمين
+async function loadTreasuries() {
+  await loadCommon();
+  const rows = await Promise.all(treasuries.map(async t => {
+    const { data: pb } = await sb.rpc('get_treasury_projected_balance', { t_id: t.id });
+    const projected = Number(pb !== null && pb !== undefined ? pb : t.current_balance);
+    const tr = el('tr');
+    const act = el('td', { style: 'white-space:nowrap;' });
+    if (isAdmin()) {
+      const editBtn = el('button', { className: 'sm edit-btn' });
+      editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      editBtn.title = 'تعديل';
+      editBtn.onclick = () => {
+        const f = $('editTreasuryForm');
+        f.treasuryId.value = t.id;
+        f.name.value = t.name;
+        $('editTreasuryModal').style.display = 'flex';
+      };
+      const toggleBtn = el('button', { className: 'sm secondary', style: 'margin-right:4px;' });
+      toggleBtn.innerHTML = t.is_active ? '<i class="fa-solid fa-ban"></i>' : '<i class="fa-solid fa-check"></i>';
+      toggleBtn.title = t.is_active ? 'إيقاف' : 'تفعيل';
+      toggleBtn.onclick = async () => {
+        await sb.from('treasuries').update({ is_active: !t.is_active }).eq('id', t.id);
+        loadTreasuries();
+      };
+      act.append(editBtn, toggleBtn);
+    }
+    tr.append(cell(t.name, 'bold'), cell(fmt(t.current_balance) + ' ج.م', 'in'), cell(fmt(projected) + ' ج.م'), cell(t.is_active ? '🟢 مفعّلة' : '🔴 موقوفة'), act);
+    return tr;
+  }));
+  fill($('treasuryBody'), rows, 5, 'لا توجد خزائن');
+}
+
+$('editTreasuryForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  const { error } = await sb.from('treasuries').update({ name: f.name.value.trim() }).eq('id', f.treasuryId.value);
+  if (error) return showMsg(error.message, false);
+  showMsg('تم تعديل اسم الخزينة بنجاح', true);
+  $('editTreasuryModal').style.display = 'none';
+  loadTreasuries();
+};
+
+function openConfirmDelete(msg, onConfirm) {
+  $('confirmDeleteMsg').textContent = msg;
+  $('confirmDeleteModal').style.display = 'flex';
+  const btn = $('confirmDeleteYes');
+  btn.onclick = async () => {
+    $('confirmDeleteModal').style.display = 'none';
+    await onConfirm();
+  };
+}
+
+// ---- حركات الموردين: شارة الحالة + اعتماد/رفض الحركات المستقلة ----
+function supplierStatusBadge(status) {
+  return el('span', { className: 'badge ' + status },
+    status === 'confirmed' ? '🟢 مؤكد' : (status === 'pending' ? '🟡 معلق' : '🔴 مرفوض'));
+}
+function supplierActionsCell(r) {
+  const td = el('td');
+  const note = (text) => el('span', { className: 'muted', style: 'font-size:12px;' }, text);
+  if (r.status !== 'pending') { td.append(note('—')); return td; }
+  if (r.transaction_id) { td.append(note('تُعتمد مع حركة الخزينة')); return td; }
+  if (!canApprove()) { td.append(note('—')); return td; }
+
+  const ok = el('button', { className: 'sm', title: 'اعتماد' });
+  ok.innerHTML = '<i class="fa-solid fa-check"></i>';
+  ok.onclick = () => decideSupplierMovement(r.id, 'approve');
+  const no = el('button', { className: 'sm danger', title: 'رفض', style: 'margin-right:4px;' });
+  no.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+  no.onclick = () => { if (confirm('هل أنت متأكد من رفض هذه الحركة؟')) decideSupplierMovement(r.id, 'reject'); };
+  td.append(ok, no);
+  return td;
+}
+async function decideSupplierMovement(id, action) {
+  const { error } = await sb.rpc('confirm_supplier_movement', { p_movement_id: id, p_action: action });
+  if (error) return showMsg(error.message, false);
+  showMsg(action === 'approve' ? 'تم اعتماد حركة المورد' : 'تم رفض حركة المورد', true);
+  loadSuppliers();
+  const srView = $('v-supplier_report');
+  if (srView && !srView.classList.contains('hidden')) applySupplierReportFilter();
+}
+
+async function loadSuppliers() {
+  await loadCommon();
+  const supRows = (suppliers || []).map(x => {
+    const tr = el('tr');
+    const act = el('td', { style: 'white-space:nowrap;' });
+    const editBtn = el('button', { className: 'sm edit-btn' });
+    editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+    editBtn.title = 'تعديل';
+    editBtn.onclick = () => {
+      const f = $('editSupplierForm');
+      f.supplierId.value = x.id;
+      f.name.value = x.name;
+      f.phone.value = x.phone || '';
+      f.address.value = x.address || '';
+      $('editSupplierModal').style.display = 'flex';
+    };
+    const toggleBtn = el('button', { className: 'sm secondary' });
+    toggleBtn.innerHTML = x.is_active ? '<i class="fa-solid fa-ban"></i>' : '<i class="fa-solid fa-check"></i>';
+    toggleBtn.title = x.is_active ? 'إيقاف' : 'تفعيل';
+    toggleBtn.style.marginRight = '4px';
+    toggleBtn.onclick = async () => {
+      await sb.from('suppliers').update({ is_active: !x.is_active }).eq('id', x.id);
+      loadSuppliers();
+    };
+    // ملاحظة: حذف المورد متوقف عمداً - المورد له حركات مالية، والتوقيف (تعطيل) بديل آمن
+    act.append(editBtn, toggleBtn);
+    tr.append(cell(x.name, 'bold'), cell(x.phone || '—'), cell(fmt(x.current_balance) + ' ج.م', Number(x.current_balance) > 0 ? 'out' : 'in'), cell(x.is_active ? '🟢 نشط' : '🔴 موقوف'), act);
+    return tr;
+  });
+  fill($('supBody'), supRows, 5, 'لا يوجد موردين');
+
+  const { data: mv, error: mvErr } = await sb.from('supplier_movements')
+    .select('id, transaction_id, movement_number, created_at, type, amount, status, balance_after, invoice_no, created_by, supplier_id, suppliers!supplier_id(name)')
+    .order('created_at', { ascending: false }).limit(20);
+  if (mvErr) { console.warn('supplier_movements error:', mvErr.message); }
+  const mvRows = (mv || []).map(r => {
+    const tr = el('tr');
+    tr.append(
+      cell(r.movement_number || '—', 'in'),
+      cell(new Date(r.created_at).toLocaleDateString('ar-EG')),
+      cell(r.suppliers?.name || '—', 'bold'),
+      cell(MV_LABEL[r.type] || r.type),
+      cell(fmt(r.amount) + ' ج.م', r.type === 'payment' ? 'out' : 'in'),
+      el('td', {}, supplierStatusBadge(r.status)),
+      cell(fmt(r.balance_after) + ' ج.م', 'bold'),
+      cell(r.invoice_no || '—'),
+      supplierActionsCell(r)
+    );
+    return tr;
+  });
+  fill($('mvBody'), mvRows, 9, 'لا توجد حركات موردين');
+}
+
+$('editSupplierForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  const { error } = await sb.from('suppliers').update({ name: f.name.value.trim(), phone: f.phone.value.trim() || null, address: f.address.value.trim() || null }).eq('id', f.supplierId.value);
+  if (error) return showMsg(error.message, false);
+  showMsg('تم تعديل بيانات المورد بنجاح', true);
+  $('editSupplierModal').style.display = 'none';
+  loadSuppliers();
+};
+
+async function loadBranches() {
+  const { data } = await sb.from('branches').select('*').order('code');
+  const bRows = (data || []).map(b => {
+    const tr = el('tr');
+    const act = el('td', { style: 'white-space:nowrap;' });
+    const editBtn = el('button', { className: 'sm edit-btn' });
+    editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+    editBtn.title = 'تعديل';
+    editBtn.onclick = () => {
+      const f = $('editBranchForm');
+      f.branchId.value = b.id;
+      f.code.value = b.code || '';
+      f.name.value = b.name;
+      f.address.value = b.address || '';
+      f.phone.value = b.phone || '';
+      $('editBranchModal').style.display = 'flex';
+    };
+    act.append(editBtn);
+    if (isAdmin()) {
+      const delBtn = el('button', { className: 'sm del-btn' });
+      delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      delBtn.title = 'حذف';
+      delBtn.style.marginRight = '4px';
+      delBtn.onclick = () => openConfirmDelete(`حذف الفرع "${b.name}"؟ ستُحذف جميع البيانات المرتبطة به!`, async () => {
+        const { error } = await sb.from('branches').delete().eq('id', b.id);
+        if (error) return showMsg(error.message, false);
+        showMsg('تم حذف الفرع بنجاح', true); loadBranches();
+      });
+      act.append(delBtn);
+    }
+    tr.append(cell(b.code, 'in'), cell(b.name, 'bold'), cell(b.address || '—'), cell(b.phone || '—'), act);
+    return tr;
+  });
+  fill($('branchBody'), bRows, 5, 'لا توجد فروع');
+}
+
+$('editBranchForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  const { error } = await sb.from('branches').update({ code: f.code.value.trim(), name: f.name.value.trim(), address: f.address.value.trim() || null, phone: f.phone.value.trim() || null }).eq('id', f.branchId.value);
+  if (error) return showMsg(error.message, false);
+  showMsg('تم تعديل بيانات الفرع بنجاح', true);
+  $('editBranchModal').style.display = 'none';
+  loadBranches();
+};
+
+async function loadCategories() {
+  const { data } = await sb.from('transaction_categories').select('*').order('type').order('name');
+  const cRows = (data || []).map(c => {
+    const tr = el('tr');
+    const typeLabel = c.type === 'deposit' ? '🟢 إيداع' : (c.type === 'transfer' ? '🔵 تحويل خزن' : '🔴 صرف');
+    const act = el('td', { style: 'white-space:nowrap;' });
+    const toggleBtn = el('button', { className: 'sm secondary' });
+    toggleBtn.innerHTML = c.is_active ? '<i class="fa-solid fa-ban"></i> إيقاف' : '<i class="fa-solid fa-check"></i> تفعيل';
+    toggleBtn.onclick = async () => {
+      await sb.from('transaction_categories').update({ is_active: !c.is_active }).eq('id', c.id);
+      loadCategories();
+    };
+    act.append(toggleBtn);
+    if (isAdmin()) {
+      const delBtn = el('button', { className: 'sm del-btn' });
+      delBtn.innerHTML = '<i class="fa-solid fa-trash"></i>';
+      delBtn.style.marginRight = '4px';
+      delBtn.onclick = () => openConfirmDelete(`حذف البند "${c.name}"؟`, async () => {
+        const { error } = await sb.from('transaction_categories').delete().eq('id', c.id);
+        if (error) return showMsg(error.message, false);
+        showMsg('تم حذف البند', true); loadCategories();
+      });
+      act.append(delBtn);
+    }
+    tr.append(cell(typeLabel), cell(c.name, 'bold'), cell(c.description || '—'), cell(c.is_active ? '🟢 مفعّل' : '🔴 موقوف'), act);
+    return tr;
+  });
+  fill($('catBody'), cRows, 5, 'لا توجد بنود');
+}
+
+async function loadUsers() {
+  await loadCommon();
+  const { data: users } = await sb.from('users').select('*, roles(role_name), branches(name)');
+  const nuRole = $('newUserRole');
+  if (nuRole) {
+    const prevRole = nuRole.value;
+    nuRole.replaceChildren();
+    const list = (rolesList && rolesList.length > 0) ? rolesList : DEFAULT_ROLES;
+    list.forEach(r => nuRole.append(option(r.role_key, r.role_name)));
+    if (prevRole && Array.from(nuRole.options).some(o => o.value === prevRole)) nuRole.value = prevRole;
+  }
+  const nuBranch = $('newUserBranch');
+  if (nuBranch) {
+    const prevB = nuBranch.value;
+    nuBranch.replaceChildren(option('', '— كل الفروع —'));
+    branches.forEach(b => nuBranch.append(option(b.id, b.name)));
+    if (prevB) nuBranch.value = prevB;
+  }
+  const nuTr = $('newUserTreasury');
+  if (nuTr) {
+    const prevT = nuTr.value;
+    nuTr.replaceChildren(option('', '— بدون خزينة مخصصة —'));
+    treasuries.forEach(t => nuTr.append(option(t.id, t.name)));
+    if (prevT) nuTr.value = prevT;
+  }
+
+  const uRows = (users || []).map(u => {
+    const tr = el('tr');
+    const act = el('td', { style: 'white-space:nowrap;' });
+
+    // زر التعديل (للجميع إذا كانوا مديرين، أو المستخدم نفسه)
+    if (isAdmin()) {
+      const editBtn = el('button', { className: 'sm edit-btn' });
+      editBtn.innerHTML = '<i class="fa-solid fa-pen"></i>';
+      editBtn.title = 'تعديل';
+      editBtn.onclick = async () => {
+        const f = $('editUserForm');
+        f.userId.value = u.id;
+        const { data: curEmail } = await sb.rpc('admin_get_user_email', { p_user_id: u.id });
+        f.email.value = curEmail || '';
+        f.dataset.origEmail = (curEmail || '').toLowerCase();
+        f.fullName.value = u.full_name;
+        f.username.value = u.username;
+        f.isActive.checked = u.is_active;
+        f.dataset.wasActive = u.is_active ? '1' : '0';
+        f.newPassword.value = '';
+        // ملء قوائم التعديل
+        const rSel = $('editUserRole'); rSel.replaceChildren();
+        const list = (rolesList && rolesList.length > 0) ? rolesList : DEFAULT_ROLES;
+        list.forEach(r => rSel.append(option(r.role_key, r.role_name)));
+        rSel.value = u.role_key;
+        const bSel = $('editUserBranch'); bSel.replaceChildren(option('', '— كل الفروع —'));
+        branches.forEach(b => bSel.append(option(b.id, b.name)));
+        bSel.value = u.branch_id || '';
+        const tSel = $('editUserTreasury'); tSel.replaceChildren(option('', '— بدون خزينة —'));
+        treasuries.forEach(t => tSel.append(option(t.id, t.name)));
+        tSel.value = u.treasury_id || '';
+        $('editUserModal').style.display = 'flex';
+      };
+      act.append(editBtn);
+
+      if (u.id !== me?.id) {
+        const toggleBtn = el('button', { className: 'sm secondary' });
+        toggleBtn.innerHTML = u.is_active ? '<i class="fa-solid fa-user-slash"></i>' : '<i class="fa-solid fa-user-check"></i>';
+        toggleBtn.title = u.is_active ? 'تعطيل' : 'تنشيط';
+        toggleBtn.style.marginRight = '4px';
+        toggleBtn.onclick = async () => {
+          const actionTxt = u.is_active ? 'تعطيل' : 'تنشيط';
+          if (!confirm(`هل تريد ${actionTxt} حساب "${u.full_name}"؟`)) return;
+          const { error } = await sb.rpc('admin_set_user_active', { p_user_id: u.id, p_active: !u.is_active });
+          if (error) return showMsg(error.message, false);
+          showMsg(`تم ${actionTxt} الحساب`, true);
+          loadUsers();
+        };
+        // ملاحظة: الحذف النهائي متوقف عمداً - المستخدم مرتبط بحركات مالية، والتعطيل بديل آمن
+        act.append(toggleBtn);
+      }
+    } else {
+      act.append(document.createTextNode('—'));
+    }
+
+    tr.append(
+      cell(u.full_name, 'bold'),
+      cell(u.username),
+      cell(u.roles?.role_name || u.role_key),
+      cell(u.branches?.name || 'كل الفروع'),
+      cell(u.is_active ? '🟢 مفعّل' : '🔴 موقوف'),
+      act
+    );
+    return tr;
+  });
+  fill($('userBody'), uRows, 6, 'لا يوجد مستخدمين');
+}
+
+$('editUserForm').onsubmit = async e => {
+  e.preventDefault();
+  const f = e.target;
+  const pwd = f.newPassword.value;
+  if (pwd && pwd.length < 6) return showMsg('كلمة المرور الجديدة لازم تكون 6 أحرف على الأقل', false);
+
+  const payload = {
+    full_name: f.fullName.value.trim(),
+    username: f.username.value.trim().toLowerCase(),
+    role_key: f.roleKey.value,
+    branch_id: f.branchId.value || null,
+    treasury_id: f.treasuryId.value || null
+  };
+  const { error } = await sb.from('users').update(payload).eq('id', f.userId.value);
+  if (error) return showMsg(error.message, false);
+
+  // تغيير الإيميل (لو اتغيّر فعلاً)
+  const newEmail = f.email.value.trim().toLowerCase();
+  if (newEmail && newEmail !== (f.dataset.origEmail || '')) {
+    const { error: emErr } = await sb.rpc('admin_set_user_email', { p_user_id: f.userId.value, p_email: newEmail });
+    if (emErr) return showMsg('تم حفظ البيانات لكن تعذر تغيير البريد: ' + emErr.message, false);
+  }
+
+  // تفعيل/تعطيل عبر الدالة (بتقفل الدخول فعلياً من Supabase Auth)
+  const wantActive = f.isActive.checked;
+  const wasActive = f.dataset.wasActive === '1';
+  if (wantActive !== wasActive) {
+    const { error: aErr } = await sb.rpc('admin_set_user_active', { p_user_id: f.userId.value, p_active: wantActive });
+    if (aErr) return showMsg('تم حفظ البيانات لكن تعذر تغيير حالة الحساب: ' + aErr.message, false);
+  }
+
+  // تغيير كلمة المرور (اختياري)
+  if (pwd) {
+    const { error: pErr } = await sb.rpc('admin_set_user_password', { p_user_id: f.userId.value, p_password: pwd });
+    if (pErr) return showMsg('تم حفظ البيانات لكن تعذر تغيير كلمة المرور: ' + pErr.message, false);
+  }
+
+  showMsg('تم تعديل بيانات المستخدم بنجاح', true);
+  $('editUserModal').style.display = 'none';
+  loadUsers();
+};
+
+// =====================================================================
+// تقرير الموردين الاحترافي
+// =====================================================================
+let srAllRows = [], srCurrentPage = 1, srPageSize = 20;
+
+async function loadSupplierReport() {
+  await loadCommon();
+  // ملء قائمة الموردين
+  const srSup = $('srSupplier');
+  if (srSup) {
+    const prevV = srSup.value;
+    srSup.replaceChildren(option('', '— كل الموردين —'));
+    suppliers.forEach(s => srSup.append(option(s.id, s.name)));
+    if (prevV) srSup.value = prevV;
+  }
+  await applySupplierReportFilter();
+}
+
+async function applySupplierReportFilter() {
+  const supId   = $('srSupplier').value;
+  const type    = $('srType').value;
+  const status  = $('srStatus').value;
+  const from    = $('srFrom').value;
+  const to      = $('srTo').value;
+
+  let q = sb.from('supplier_movements')
+    .select('id, transaction_id, movement_number, created_at, type, amount, status, balance_after, invoice_no, notes, created_by, supplier_id, suppliers!supplier_id(name)')
+    .order('created_at', { ascending: false });
+
+  if (supId)  q = q.eq('supplier_id', supId);
+  if (type)   q = q.eq('type', type);
+  if (status) q = q.eq('status', status);
+  if (from)   q = q.gte('created_at', cairoBoundary(from, false));
+  if (to)     q = q.lte('created_at', cairoBoundary(to, true));
+
+  const { data, error } = await q;
+  if (error) return showMsg('خطأ في جلب حركات الموردين: ' + error.message, false);
+
+  srAllRows = data || [];
+  srCurrentPage = 1;
+
+  // حساب الملخص
+  let totSupply = 0, totPayment = 0, totReturn = 0, totDebit = 0;
+  let confirmedOnly = srAllRows.filter(r => r.status === 'confirmed');
+  confirmedOnly.forEach(r => {
+    const a = Number(r.amount) || 0;
+    if (r.type === 'supply')      totSupply  += a;
+    if (r.type === 'payment')     totPayment += a;
+    if (r.type === 'return')      totReturn  += a;
+    if (r.type === 'debit_note')  totDebit   += a;
+  });
+  $('srKpiSupply').textContent   = fmt(totSupply)  + ' ج.م';
+  $('srKpiPayment').textContent  = fmt(totPayment) + ' ج.م';
+  $('srKpiReturn').textContent   = fmt(totReturn)  + ' ج.م';
+  $('srKpiDebit').textContent    = fmt(totDebit)   + ' ج.م';
+
+  renderSupplierReportPage();
+}
+
+function renderSupplierReportPage() {
+  const total = srAllRows.length;
+  const totalPages = Math.max(1, Math.ceil(total / srPageSize));
+  if (srCurrentPage > totalPages) srCurrentPage = totalPages;
+  const start = (srCurrentPage - 1) * srPageSize;
+  const pageRows = srAllRows.slice(start, start + srPageSize);
+
+  $('srCurrentCount').textContent = `${pageRows.length} من أصل ${total}`;
+  $('srPageNum').textContent = srCurrentPage;
+  $('srTotalPages').textContent = totalPages;
+  $('srPrevBtn').disabled = srCurrentPage <= 1;
+  $('srNextBtn').disabled = srCurrentPage >= totalPages;
+  $('srCountLabel').textContent = total + ' حركة إجمالية';
+
+  const rows = pageRows.map(r => {
+    const isIn = r.type === 'supply';
+    const statusBadge = el('span', { className: 'badge ' + r.status },
+      r.status === 'confirmed' ? '🟢 مؤكد' : (r.status === 'pending' ? '🟡 معلق' : '🔴 مرفوض'));
+    const tr = el('tr');
+    tr.append(
+      cell(r.movement_number || '—', 'in'),
+      cell(new Date(r.created_at).toLocaleDateString('ar-EG')),
+      cell(r.suppliers?.name || '—', 'bold'),
+      cell(MV_LABEL[r.type] || r.type),
+      cell(isIn ? fmt(r.amount) + ' ج.م' : '', 'in'),
+      cell(!isIn ? fmt(r.amount) + ' ج.م' : '', 'out'),
+      el('td', {}, statusBadge),
+      cell(fmt(r.balance_after) + ' ج.م', 'bold'),
+      cell(r.invoice_no || '—'),
+      cell(r.notes || '—', 'muted'),
+      supplierActionsCell(r)
+    );
+    return tr;
+  });
+  fill($('srBody'), rows, 11, 'لا توجد حركات موردين مطابقة للتصفية');
+
+  // ملخص النتائج
+  const confirmed = srAllRows.filter(r => r.status === 'confirmed');
+  const netBalance = confirmed.reduce((acc, r) => {
+    return acc + (r.type === 'supply' ? Number(r.amount) : -Number(r.amount));
+  }, 0);
+  if (srAllRows.length > 0) {
+    $('srSummaryRow').style.display = 'block';
+    $('srSummaryText').textContent = `إجمالي ${total} حركة | صافي الرصيد المؤكد: ${fmt(netBalance)} ج.م ${netBalance >= 0 ? '(مديونية)' : '(في مصلحتنا)'}`;
+  } else {
+    $('srSummaryRow').style.display = 'none';
+  }
+}
+
+$('srApplyBtn').onclick = applySupplierReportFilter;
+$('srResetBtn').onclick = () => {
+  ['srSupplier','srType','srStatus','srFrom','srTo'].forEach(id => { const el = $(id); if(el) el.value = ''; });
+  applySupplierReportFilter();
+};
+$('srPrevBtn').onclick = () => { if (srCurrentPage > 1) { srCurrentPage--; renderSupplierReportPage(); }};
+$('srNextBtn').onclick = () => { srCurrentPage++; renderSupplierReportPage(); };
+$('srPrintBtn').onclick = () => printSupplierReport();
+$('srExcelBtn').onclick = () => exportSupplierExcel();
+
+function exportSupplierExcel() {
+  if (!srAllRows.length) return showMsg('لا توجد بيانات حركات موردين للتصدير', false);
+  const rows = srAllRows.map(r => {
+    const isIn = r.type === 'supply';
+    return {
+      'رقم الحركة': r.movement_number || '—',
+      'التاريخ': new Date(r.created_at).toLocaleDateString('ar-EG'),
+      'المورد': r.suppliers?.name || '—',
+      'نوع الحركة': MV_LABEL[r.type] || r.type,
+      'وارد (+)': isIn ? Number(r.amount) : '',
+      'صادر (-)': !isIn ? Number(r.amount) : '',
+      'الحالة': r.status === 'confirmed' ? 'مؤكد' : (r.status === 'pending' ? 'معلق' : 'مرفوض'),
+      'الرصيد بعدها': Number(r.balance_after),
+      'رقم الفاتورة': r.invoice_no || '—',
+      'ملاحظات': r.notes || '—'
+    };
+  });
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'حركات الموردين');
+  XLSX.writeFile(wb, `حركات_موردين_أبو_الفضل_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showMsg('تم تصدير تقرير الموردين إلى Excel بنجاح', true);
+}
+
+function printSupplierReport() {
+  const win = window.open('', '_blank');
+  let html = `<html dir="rtl"><head><title>تقرير حركات الموردين - أبو الفضل للألبان</title>
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    body { font-family: Tahoma, sans-serif; font-size: 11px; color: #000; }
+    h2 { text-align: center; color: #0f3d23; margin-bottom: 4px; }
+    .sub { text-align:center; font-size:11px; color:#555; margin-bottom:10px; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:#0f3d23; color:#fff; padding:5px 6px; text-align:center; }
+    td { padding:4px 5px; border-bottom:1px solid #ddd; text-align:center; }
+    tr:nth-child(even) td { background:#f9fafb; }
+    .in { color:#166534; font-weight:bold; }
+    .out { color:#b91c1c; font-weight:bold; }
+    .summary { margin-top:12px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; }
+  </style></head><body>
+  <h2>🏭 أبو الفضل للألبان — تقرير حركات الموردين</h2>
+  <div class="sub">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')} | عدد الحركات: ${srAllRows.length}</div>
+  <table><thead><tr>
+    <th>رقم الحركة</th><th>التاريخ</th><th>المورد</th><th>النوع</th>
+    <th>وارد (+)</th><th>صادر (−)</th><th>الحالة</th><th>الرصيد المتوقع</th><th>رقم الفاتورة</th>
+  </tr></thead><tbody>`;
+
+  srAllRows.forEach(r => {
+    const isIn = r.type === 'supply';
+    const statusText = r.status === 'confirmed' ? '✅ مؤكد' : (r.status === 'pending' ? '⏳ معلق' : '❌ مرفوض');
+    html += `<tr>
+      <td>${esc(r.movement_number)}</td>
+      <td>${new Date(r.created_at).toLocaleDateString('ar-EG')}</td>
+      <td><b>${esc(r.suppliers?.name)}</b></td>
+      <td>${esc(MV_LABEL[r.type] || r.type)}</td>
+      <td class="in">${isIn ? fmt(r.amount) + ' ج.م' : '—'}</td>
+      <td class="out">${!isIn ? fmt(r.amount) + ' ج.م' : '—'}</td>
+      <td>${statusText}</td>
+      <td><b>${fmt(r.balance_after)} ج.م</b></td>
+      <td>${esc(r.invoice_no)}</td>
+    </tr>`;
+  });
+
+  const confirmed = srAllRows.filter(r => r.status === 'confirmed');
+  const netBal = confirmed.reduce((acc,r) => acc + (r.type==='supply' ? Number(r.amount) : -Number(r.amount)), 0);
+  const totSup = confirmed.filter(r=>r.type==='supply').reduce((a,r)=>a+Number(r.amount),0);
+  const totPay = confirmed.filter(r=>r.type==='payment').reduce((a,r)=>a+Number(r.amount),0);
+  const totRet = confirmed.filter(r=>r.type==='return').reduce((a,r)=>a+Number(r.amount),0);
+
+  html += `</tbody></table>
+  <div class="summary">
+    <b>ملخص الحركات المؤكدة:</b>
+    إجمالي التوريدات: <b>${fmt(totSup)} ج.م</b> |
+    إجمالي المدفوعات: <b>${fmt(totPay)} ج.م</b> |
+    إجمالي المرتجعات: <b>${fmt(totRet)} ج.م</b> |
+    صافي الرصيد: <b>${fmt(netBal)} ج.م</b>
+  </div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`;
+  win.document.write(html);
+}
+
+// =====================================================================
+// تقرير المصروفات الاحترافي
+// =====================================================================
+let erAllRows = [], erCurrentPage = 1, erPageSize = 20;
+
+async function loadExpenseReport() {
+  await loadCommon();
+  // ملء قوائم الفلتر
+  const erTr = $('erTreasury');
+  if (erTr) {
+    const prev = erTr.value;
+    erTr.replaceChildren(option('', '— كل الخزائن —'));
+    treasuries.forEach(t => erTr.append(option(t.id, t.name)));
+    if (prev) erTr.value = prev;
+  }
+  const erCat = $('erCategory');
+  if (erCat) {
+    const prev = erCat.value;
+    erCat.replaceChildren(option('', '— كل البنود —'));
+    categories.filter(c => c.type === 'withdraw' && c.is_active).forEach(c => erCat.append(option(c.id, c.name)));
+    if (prev) erCat.value = prev;
+  }
+  await applyExpenseReportFilter();
+}
+
+async function applyExpenseReportFilter() {
+  const trId   = $('erTreasury').value;
+  const catId  = $('erCategory').value;
+  const status = $('erStatus').value;
+  const from   = $('erFrom').value;
+  const to     = $('erTo').value;
+  const qText  = ($('erSearch').value || '').trim().toLowerCase();
+
+  let q = sb.from('transactions')
+    .select('id, trans_number, type, created_at, amount, status, balance_after, person_name, notes, treasuries!treasury_id(name), transaction_categories(name)')
+    .in('type', ['withdraw', 'cheque'])
+    .order('created_at', { ascending: false });
+
+  if (trId)   q = q.eq('treasury_id', trId);
+  if (catId)  q = q.eq('category_id', catId);
+  if (status) q = q.eq('status', status);
+  if (from)   q = q.gte('created_at', cairoBoundary(from, false));
+  if (to)     q = q.lte('created_at', cairoBoundary(to, true));
+
+  const { data, error } = await q;
+  if (error) return showMsg('خطأ في جلب بيانات المصروفات: ' + error.message, false);
+
+  let filtered = (data || []);
+  if (qText) {
+    filtered = filtered.filter(r =>
+      (r.trans_number||'').toLowerCase().includes(qText) ||
+      (r.person_name||'').toLowerCase().includes(qText) ||
+      (r.notes||'').toLowerCase().includes(qText)
+    );
+  }
+  erAllRows = filtered;
+  erCurrentPage = 1;
+
+  // إحصائيات
+  const confirmed = erAllRows.filter(r => r.status === 'confirmed');
+  const pending   = erAllRows.filter(r => r.status === 'pending');
+  const totConf   = confirmed.reduce((a,r) => a+Number(r.amount), 0);
+  const totPend   = pending.reduce((a,r) => a+Number(r.amount), 0);
+  const avg = erAllRows.length ? totConf / (confirmed.length || 1) : 0;
+
+  $('erKpiTotal').textContent   = fmt(totConf) + ' ج.م';
+  $('erKpiPending').textContent = fmt(totPend) + ' ج.م';
+  $('erKpiCount').textContent   = erAllRows.length;
+  $('erKpiAvg').textContent     = fmt(avg) + ' ج.م';
+
+  renderExpenseReportPage();
+}
+
+function renderExpenseReportPage() {
+  const total = erAllRows.length;
+  const totalPages = Math.max(1, Math.ceil(total / erPageSize));
+  if (erCurrentPage > totalPages) erCurrentPage = totalPages;
+  const start = (erCurrentPage - 1) * erPageSize;
+  const pageRows = erAllRows.slice(start, start + erPageSize);
+
+  $('erCurrentCount').textContent = `${pageRows.length} من أصل ${total}`;
+  $('erPageNum').textContent = erCurrentPage;
+  $('erTotalPages').textContent = totalPages;
+  $('erPrevBtn').disabled = erCurrentPage <= 1;
+  $('erNextBtn').disabled = erCurrentPage >= totalPages;
+
+  const rows = pageRows.map(r => {
+    const statusBadge = el('span', { className: 'badge ' + r.status },
+      r.status === 'confirmed' ? '🟢 مؤكد' : (r.status === 'pending' ? '🟡 معلق' : '🔴 مرفوض'));
+    const actions = el('td');
+    if (r.status !== 'rejected') {
+      const pBtn = el('button', { className:'sm secondary' });
+      pBtn.innerHTML = '<i class="fa-solid fa-print"></i>';
+      pBtn.title = 'طباعة السند';
+      pBtn.onclick = () => openReceiptModal(r);
+      actions.append(pBtn);
+    } else {
+      actions.append(el('span', { className:'muted', style:'font-size:12px;'}, 'مرفوض'));
+    }
+    if (r.status === 'pending' && canApprove()) {
+      const cBtn = el('button', { className:'sm', style:'margin-right:4px;'});
+      cBtn.innerHTML = '<i class="fa-solid fa-check"></i>';
+      cBtn.title = 'اعتماد';
+      cBtn.onclick = async () => {
+        const { error } = await sb.rpc('confirm_transaction', { p_trans_id: r.id, p_action: 'approve' });
+        if (error) return showMsg(error.message, false);
+        showMsg('تم اعتماد المصروف بنجاح', true); applyExpenseReportFilter();
+      };
+      actions.append(cBtn);
+    }
+    const tr = el('tr');
+    tr.append(
+      cell(r.trans_number, 'in'),
+      cell(new Date(r.created_at).toLocaleDateString('ar-EG')),
+      cell(r.treasuries?.name || '—'),
+      cell(r.transaction_categories?.name || '—', 'bold'),
+      cell(r.person_name || '—'),
+      cell(fmt(r.amount) + ' ج.م', 'out'),
+      el('td', {}, statusBadge),
+      cell(r.notes || '—', 'muted'),
+      actions
+    );
+    return tr;
+  });
+  fill($('erBody'), rows, 9, 'لا توجد مصروفات مطابقة للتصفية');
+}
+
+$('erApplyBtn').onclick = applyExpenseReportFilter;
+$('erResetBtn').onclick = () => {
+  ['erTreasury','erCategory','erStatus','erFrom','erTo','erSearch'].forEach(id => { const e=$(id); if(e) e.value=''; });
+  applyExpenseReportFilter();
+};
+$('erPrevBtn').onclick = () => { if(erCurrentPage>1){erCurrentPage--;renderExpenseReportPage();}};
+$('erNextBtn').onclick = () => { erCurrentPage++;renderExpenseReportPage();};
+$('erPrintBtn').onclick = () => printExpenseReport();
+$('erExcelBtn').onclick = () => exportExpenseExcel();
+
+function printExpenseReport() {
+  const win = window.open('', '_blank');
+  let html = `<html dir="rtl"><head><title>تقرير المصروفات - أبو الفضل للألبان</title>
+  <style>
+    @page { size: A4 landscape; margin: 10mm; }
+    body { font-family: Tahoma, sans-serif; font-size: 11px; color: #000; }
+    h2 { text-align: center; color: #0f3d23; margin-bottom: 4px; }
+    .sub { text-align:center; font-size:11px; color:#555; margin-bottom:10px; }
+    table { width:100%; border-collapse:collapse; }
+    th { background:#0f3d23; color:#fff; padding:5px 6px; text-align:center; }
+    td { padding:4px 5px; border-bottom:1px solid #ddd; text-align:center; }
+    tr:nth-child(even) td { background:#f9fafb; }
+    .out { color:#b91c1c; font-weight:bold; }
+    .summary { margin-top:12px; padding:8px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:6px; }
+  </style></head><body>
+  <h2>💸 أبو الفضل للألبان — تقرير المصروفات والمدفوعات</h2>
+  <div class="sub">تاريخ الطباعة: ${new Date().toLocaleString('ar-EG')} | عدد السندات: ${erAllRows.length}</div>
+  <table><thead><tr>
+    <th>رقم السند</th><th>التاريخ</th><th>الخزينة</th><th>البند/السبب</th>
+    <th>المستفيد</th><th>المبلغ</th><th>الحالة</th><th>ملاحظات</th>
+  </tr></thead><tbody>`;
+
+  erAllRows.forEach(r => {
+    const statusText = r.status === 'confirmed' ? '✅ مؤكد' : (r.status === 'pending' ? '⏳ معلق' : '❌ مرفوض');
+    html += `<tr>
+      <td>${esc(r.trans_number)}</td>
+      <td>${new Date(r.created_at).toLocaleDateString('ar-EG')}</td>
+      <td>${esc(r.treasuries?.name)}</td>
+      <td><b>${esc(r.transaction_categories?.name)}</b></td>
+      <td>${esc(r.person_name)}</td>
+      <td class="out"><b>${fmt(r.amount)} ج.م</b></td>
+      <td>${statusText}</td>
+      <td>${esc(r.notes)}</td>
+    </tr>`;
+  });
+
+  const totConf = erAllRows.filter(r=>r.status==='confirmed').reduce((a,r)=>a+Number(r.amount),0);
+  const totPend = erAllRows.filter(r=>r.status==='pending').reduce((a,r)=>a+Number(r.amount),0);
+
+  html += `</tbody></table>
+  <div class="summary">
+    <b>ملخص:</b>
+    المؤكد: <b>${fmt(totConf)} ج.م</b> |
+    المعلق: <b>${fmt(totPend)} ج.م</b> |
+    الإجمالي الكلي: <b>${fmt(totConf+totPend)} ج.م</b>
+  </div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`;
+  win.document.write(html);
+}
+
+function exportExpenseExcel() {
+  if (!erAllRows.length) return showMsg('لا توجد بيانات للتصدير', false);
+  const rows = erAllRows.map(r => ({
+    'رقم السند': r.trans_number,
+    'التاريخ': new Date(r.created_at).toLocaleDateString('ar-EG'),
+    'الخزينة': r.treasuries?.name || '—',
+    'البند/السبب': r.transaction_categories?.name || '—',
+    'المستفيد': r.person_name || '—',
+    'المبلغ': Number(r.amount),
+    'الحالة': r.status === 'confirmed' ? 'مؤكد' : (r.status === 'pending' ? 'معلق' : 'مرفوض'),
+    'ملاحظات': r.notes || '—'
+  }));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'تقرير المصروفات');
+  XLSX.writeFile(wb, `مصروفات_أبو_الفضل_${new Date().toISOString().slice(0,10)}.xlsx`);
+  showMsg('تم تصدير ملف Excel بنجاح', true);
+}
+
+async function loadRoles() {
+  const [{ data: roles }, { data: pa }] = await Promise.all([
+    sb.from('roles').select('*').order('role_key'),
+    sb.from('page_access').select('*')
+  ]);
+  const box = $('roleList'); box.replaceChildren();
+  (roles || []).forEach(r => {
+    const card = el('div', { className:'stat', style:'background:#fff; margin-bottom:12px;' });
+    card.append(el('div', { className:'name', style:'font-weight:bold; font-size:15px; color:var(--green-primary);' }, r.role_name + ` (${r.role_key})`));
+
+    const flagsGrid = el('div', { className:'flags' });
+    const flagInputs = {};
+    Object.entries(SUB_FLAGS).forEach(([k, text]) => {
+      const cb = el('input', { type:'checkbox', checked: !!r[k], disabled: !isAdmin() });
+      flagInputs[k] = cb;
+      const lab = el('label', { className:'row' }); lab.append(cb, document.createTextNode(' ' + text)); flagsGrid.append(lab);
+    });
+
+    const save = el('button', { className:'sm secondary', style:'margin-top:10px;', disabled: !isAdmin() }, 'حفظ صلاحيات الدور');
+    save.onclick = async () => {
+      const payload = {};
+      Object.keys(SUB_FLAGS).forEach(k => payload[k] = flagInputs[k].checked);
+      const { error } = await sb.from('roles').update(payload).eq('role_key', r.role_key);
+      if (error) return showMsg(error.message, false);
+      showMsg('تم حفظ صلاحيات دور ' + r.role_name, true);
+    };
+
+    card.append(flagsGrid, save);
+    box.append(card);
+  });
+}
+
+sb.auth.onAuthStateChange(event => { if (event === 'SIGNED_OUT') { stopLiveUpdates(); refreshView(); } });
+refreshView();
+</script>
+</body>
+</html>
